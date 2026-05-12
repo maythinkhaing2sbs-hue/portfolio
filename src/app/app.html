@@ -1,13 +1,15 @@
+<div class="scroll-progress"></div>
+<div class="cursor-glow"></div>
 <main class="portfolio-page">
-  <header class="top-nav-wrap reveal">
+  <header class="top-nav-wrap reveal" [class.scrolled]="isScrolled">
     <nav class="top-nav">
-      <!-- <a class="brand" href="#">May<span>.</span></a> -->
-      <a href="#home">Home</a>
-      <a href="#about">About</a>
-      <a href="#projects">Work</a>
-      <a href="#experience">Experience</a>
-      <a href="#recommendations">Recommendation</a>
-      <a href="#contact">Contact</a>
+      <a class="brand" href="#home">May<span>.</span></a>
+      <a href="#home" [class.active]="activeSection === 'home'">Home</a>
+      <a href="#about" [class.active]="activeSection === 'about'">About</a>
+      <a href="#projects" [class.active]="activeSection === 'projects'">Work</a>
+      <a href="#experience" [class.active]="activeSection === 'experience'">Experience</a>
+      <a href="#recommendations" [class.active]="activeSection === 'recommendations'">Recommendation</a>
+      <a href="#contact" [class.active]="activeSection === 'contact'">Contact</a>
       <a class="hire-btn" href="#contact">Hire me ↗</a>
     </nav>
   </header>
@@ -33,15 +35,15 @@
       </div>
       <div class="hero-stats">
         <div>
-          <h3>2+</h3>
+          <h3 class="stat-count" data-count="2" data-suffix="+">2+</h3>
           <p>Years experience</p>
         </div>
         <div>
-          <h3>110+</h3>
+          <h3 class="stat-count" data-count="110" data-suffix="+">110+</h3>
           <p>Projects shipped</p>
         </div>
         <div>
-          <h3>40+</h3>
+          <h3 class="stat-count" data-count="40" data-suffix="+">40+</h3>
           <p>Happy clients</p>
         </div>
       </div>
@@ -106,7 +108,7 @@
           @for (stat of aboutStats; track stat.label) {
             <article class="about-stat-card">
               <div class="about-stat-top">
-                <h3>{{ stat.value }}</h3>
+                <h3 class="stat-count" [attr.data-count]="stat.value">{{ stat.value }}</h3>
                 <span> {{ stat.suffix }} </span>
               </div>
               <p class="dot-label">{{ stat.label }}</p>
@@ -157,6 +159,18 @@
         <p class="section-pill">• Selected work</p>
         <h2>Recent <span class="accent">projects.</span></h2>
       </div>
+      <div class="showcase-progress" aria-label="Project navigation">
+        @for (project of projects; track $index; let i = $index) {
+          <button
+            type="button"
+            class="showcase-progress-item"
+            [class.active]="activeProjectIndex === i"
+            [class.completed]="i < activeProjectIndex"
+            (click)="goToProject(i)"
+            [attr.aria-label]="'Go to project ' + (i + 1)"
+          ></button>
+        }
+      </div>
     </div>
 
     <div class="showcase-stack">
@@ -187,11 +201,15 @@
                   <span class="badge">{{ tag }}</span>
                 }
               </div>
-              <button type="button" class="case-btn">{{ project.actionLabel }} ↗</button>
             </div>
 
             <div class="showcase-visual">
-              <img class="desktop-shot" src="images/SmartHR.png" alt="SmartHR project screenshot" />
+              <img
+                class="desktop-shot"
+                [src]="project.imageDesktop"
+                [alt]="project.titleStart + ' ' + project.titleAccent + ' ' + project.titleEnd + ' mockup'"
+                (error)="onProjectImageError($event)"
+              />
             </div>
           </div>
         </article>
@@ -295,9 +313,9 @@
     </div>
     <a class="contact-email" href="mailto:mtkhaing.psn17@gmail.com"><span>✉</span> mtkhaing.psn17@gmail.com <span>↗</span></a>
     <div class="contact-chips">
-      <span>Yangon, Myanmar</span>
-      <span>+95 9 770 502 150</span>
-      <span>Reply within 24h</span>
+      <span>📍 Yangon, Myanmar</span>
+      <span>📞 +95 9 770 502 150</span>
+      <span>⚡ Reply within 24h</span>
     </div>
     <div class="social-row" aria-label="Social links">
       <a href="#" aria-label="LinkedIn">in</a>

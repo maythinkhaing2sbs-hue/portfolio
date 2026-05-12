@@ -3,6 +3,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  NgZone,
   OnDestroy,
   inject
 } from '@angular/core';
@@ -17,10 +18,18 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 })
 export class App implements AfterViewInit, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly ngZone = inject(NgZone);
   private readonly hoverCleanupFns: Array<() => void> = [];
   private gsapContext?: gsap.Context;
   private ribbonTween?: gsap.core.Tween;
   private projectScrollTrigger?: ScrollTrigger;
+  private scrollProgressTrigger?: ScrollTrigger;
+  private navScrollListener?: () => void;
+  private sectionObserver?: IntersectionObserver;
+
+  isScrolled = false;
+  activeSection = 'home';
+  activeProjectIndex = 0;
 
   readonly aboutStats = [
     { value: '110', suffix: '+', label: 'Projects', note: 'Shipped end-to-end' },
@@ -70,8 +79,8 @@ export class App implements AfterViewInit, OnDestroy {
 
   readonly skillShowcase = [
     {
-      name: 'Adobe XD',
-      icon: 'https://cdn.simpleicons.org/adobexd/FF61F6'
+      name: 'Figma',
+      icon: 'https://cdn.simpleicons.org/figma/F24E1E'
     },
     {
       name: 'Framer',
@@ -82,24 +91,20 @@ export class App implements AfterViewInit, OnDestroy {
       icon: 'https://cdn.simpleicons.org/notion/ffffff'
     },
     {
-      name: 'Webflow',
-      icon: 'https://cdn.simpleicons.org/webflow/4353FF'
+      name: 'Canva',
+      icon: 'https://cdn.simpleicons.org/canva/00C4CC'
     },
     {
-      name: 'Principle',
-      icon: 'https://cdn.simpleicons.org/prisma/ffffff'
+      name: 'Claude AI',
+      icon: 'https://cdn.simpleicons.org/anthropic/ffffff'
     },
     {
-      name: 'Miro',
-      icon: 'https://cdn.simpleicons.org/miro/FFD02F'
+      name: 'WordPress',
+      icon: 'https://cdn.simpleicons.org/wordpress/21759B'
     },
     {
-      name: 'Figma',
-      icon: 'https://cdn.simpleicons.org/figma/F24E1E'
-    },
-    {
-      name: 'Photoshop',
-      icon: 'https://cdn.simpleicons.org/adobephotoshop/31A8FF'
+      name: 'Hostinger',
+      icon: 'https://cdn.simpleicons.org/hostinger/673DE6'
     },
     {
       name: 'VS Code',
@@ -108,10 +113,6 @@ export class App implements AfterViewInit, OnDestroy {
     {
       name: 'Angular',
       icon: 'https://cdn.simpleicons.org/angular/DD0031'
-    },
-    {
-      name: 'React',
-      icon: 'https://cdn.simpleicons.org/react/61DAFB'
     }
   ];
 
@@ -174,7 +175,7 @@ export class App implements AfterViewInit, OnDestroy {
       description: 'A robust ERP dashboard covering inventory, finance, and supply chain workflows with role-based control.',
       modules: ['Inventory Flow', 'Finance & Reports', 'Supply Chain'],
       tags: ['ERP', 'Dashboard', 'Enterprise UX'],
-      imageDesktop: 'images/SmartHR.png',
+      imageDesktop: 'images/SmartERP.png',
       actionLabel: 'View case study'
     },
     {
@@ -188,7 +189,7 @@ export class App implements AfterViewInit, OnDestroy {
       description: 'High-fidelity website portfolio designs with modern typography, confident spacing, and immersive interactions.',
       modules: ['Landing Showcase', 'Brand Story', 'Responsive Systems'],
       tags: ['Luxury UI', 'Marketing Site', 'Motion Design'],
-      imageDesktop: 'images/SmartHR.png',
+      imageDesktop: 'images/SmartWeb.png',
       actionLabel: 'View case study'
     },
     {
@@ -202,7 +203,7 @@ export class App implements AfterViewInit, OnDestroy {
       description: 'Native-feel mobile apps for HR and ERP tools, presented with polished device mockups and seamless UX.',
       modules: ['HR Mobile', 'ERP Mobile', 'Cross-device Continuity'],
       tags: ['iOS/Android', 'Responsive UX', 'Business Apps'],
-      imageDesktop: 'images/SmartHR.png',
+      imageDesktop: 'images/SmartMobile.png',
       actionLabel: 'View case study'
     }
   ];
@@ -242,6 +243,8 @@ export class App implements AfterViewInit, OnDestroy {
 
     this.gsapContext = gsap.context(() => {
       this.setupSectionEntranceAnimations();
+      this.setupCounterAnimations();
+      this.setupProgressBarAnimations();
 
       gsap.to('.hero-image', {
         yPercent: -12,
@@ -258,13 +261,23 @@ export class App implements AfterViewInit, OnDestroy {
     this.setupHoverEffects();
     this.setupSkillRibbonAnimation();
     this.setupProjectShowcaseAnimation();
+    this.setupScrollProgress();
+    this.setupMagneticButtons();
+    this.setupCursorGlow();
+    this.setupStickyNav();
+    this.setupActiveSectionTracking();
   }
 
   ngOnDestroy(): void {
     this.hoverCleanupFns.forEach((cleanup) => cleanup());
     this.ribbonTween?.kill();
     this.projectScrollTrigger?.kill();
+    this.scrollProgressTrigger?.kill();
     this.gsapContext?.revert();
+    if (this.navScrollListener) {
+      window.removeEventListener('scroll', this.navScrollListener);
+    }
+    this.sectionObserver?.disconnect();
   }
 
   protected readonly currentYear = new Date().getFullYear();
@@ -389,6 +402,14 @@ export class App implements AfterViewInit, OnDestroy {
       return;
     }
 
+    if (window.matchMedia('(max-width: 991px)').matches) {
+      cards.forEach((card) => {
+        card.classList.add('is-active');
+        card.style.zIndex = '';
+      });
+      return;
+    }
+
     const stackGap = window.matchMedia('(max-width: 640px)').matches ? 26 : 34;
     const settledY = (offset: number) => offset * stackGap;
 
@@ -462,6 +483,10 @@ export class App implements AfterViewInit, OnDestroy {
   }
 
   private updateShowcaseStates(cards: HTMLElement[], activeIndex: number): void {
+    if (this.activeProjectIndex !== activeIndex) {
+      this.ngZone.run(() => { this.activeProjectIndex = activeIndex; });
+    }
+
     cards.forEach((card, index) => {
       const isActive = index === activeIndex;
       const isStacked = index < activeIndex;
@@ -478,6 +503,159 @@ export class App implements AfterViewInit, OnDestroy {
       } else {
         card.style.zIndex = '10';
       }
+    });
+  }
+
+  onProjectImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    const fallback = 'images/SmartHR.png';
+    if (!img.src.endsWith(fallback)) {
+      img.src = fallback;
+    }
+  }
+
+  goToProject(index: number): void {
+    const trigger = this.projectScrollTrigger;
+    if (!trigger) return;
+    const cards = gsap.utils.toArray<HTMLElement>('.showcase-card');
+    if (!cards.length) return;
+
+    const progress = cards.length > 1 ? index / (cards.length - 1) : 0;
+    const target = trigger.start + (trigger.end - trigger.start) * progress;
+    window.scrollTo({ top: target, behavior: 'smooth' });
+  }
+
+  private setupScrollProgress(): void {
+    const bar = document.querySelector('.scroll-progress') as HTMLElement | null;
+    if (!bar) return;
+
+    this.scrollProgressTrigger = ScrollTrigger.create({
+      start: 0,
+      end: 'max',
+      onUpdate: (self) => {
+        gsap.set(bar, { scaleX: self.progress, transformOrigin: 'left center' });
+      }
+    });
+  }
+
+  private setupCounterAnimations(): void {
+    const counters = this.host.nativeElement.querySelectorAll('.stat-count') as NodeListOf<HTMLElement>;
+
+    counters.forEach((el) => {
+      const target = parseInt(el.dataset['count'] ?? '0', 10);
+      const suffix = el.dataset['suffix'] ?? '';
+
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top 88%',
+        once: true,
+        onEnter: () => {
+          const obj = { value: 0 };
+          gsap.to(obj, {
+            value: target,
+            duration: 1.8,
+            ease: 'power2.out',
+            onUpdate: () => {
+              el.textContent = Math.round(obj.value) + suffix;
+            }
+          });
+        }
+      });
+    });
+  }
+
+  private setupProgressBarAnimations(): void {
+    const cards = this.host.nativeElement.querySelectorAll('.service-card') as NodeListOf<HTMLElement>;
+
+    cards.forEach((card) => {
+      const bar = card.querySelector('.progress-track span') as HTMLElement | null;
+      if (!bar) return;
+
+      const targetWidth = bar.style.width;
+      gsap.set(bar, { width: 0 });
+
+      ScrollTrigger.create({
+        trigger: card,
+        start: 'top 86%',
+        once: true,
+        onEnter: () => {
+          gsap.to(bar, { width: targetWidth, duration: 1.3, ease: 'power3.out', delay: 0.1 });
+        }
+      });
+    });
+  }
+
+  private setupMagneticButtons(): void {
+    const btns = this.host.nativeElement.querySelectorAll('.hire-btn') as NodeListOf<HTMLElement>;
+
+    btns.forEach((btn) => {
+      const move = (e: MouseEvent) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        gsap.to(btn, { x: x * 0.24, y: y * 0.24, duration: 0.35, ease: 'power2.out' });
+      };
+
+      const reset = () => {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.55, ease: 'elastic.out(1, 0.4)' });
+      };
+
+      btn.addEventListener('mousemove', move);
+      btn.addEventListener('mouseleave', reset);
+
+      this.hoverCleanupFns.push(() => {
+        btn.removeEventListener('mousemove', move);
+        btn.removeEventListener('mouseleave', reset);
+      });
+    });
+  }
+
+  private setupCursorGlow(): void {
+    const glow = document.querySelector('.cursor-glow') as HTMLElement | null;
+    if (!glow || window.matchMedia('(hover: none)').matches) return;
+
+    const onMove = (e: MouseEvent) => {
+      gsap.to(glow, {
+        x: e.clientX,
+        y: e.clientY,
+        duration: 0.7,
+        ease: 'power2.out'
+      });
+    };
+
+    document.addEventListener('mousemove', onMove);
+    this.hoverCleanupFns.push(() => document.removeEventListener('mousemove', onMove));
+  }
+
+  private setupStickyNav(): void {
+    this.ngZone.runOutsideAngular(() => {
+      this.navScrollListener = () => {
+        const scrolled = window.scrollY > 80;
+        if (scrolled !== this.isScrolled) {
+          this.ngZone.run(() => { this.isScrolled = scrolled; });
+        }
+      };
+      window.addEventListener('scroll', this.navScrollListener, { passive: true });
+    });
+  }
+
+  private setupActiveSectionTracking(): void {
+    const sectionIds = ['home', 'about', 'projects', 'experience', 'recommendations', 'contact'];
+
+    this.sectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            this.ngZone.run(() => { this.activeSection = entry.target.id; });
+          }
+        });
+      },
+      { rootMargin: '-15% 0px -65% 0px', threshold: 0 }
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) this.sectionObserver!.observe(el);
     });
   }
 }
