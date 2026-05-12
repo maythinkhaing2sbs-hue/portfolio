@@ -1,0 +1,311 @@
+<main class="portfolio-page">
+  <header class="top-nav-wrap reveal">
+    <nav class="top-nav">
+      <!-- <a class="brand" href="#">May<span>.</span></a> -->
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#projects">Work</a>
+      <a href="#experience">Experience</a>
+      <a href="#recommendations">Recommendation</a>
+      <a href="#contact">Contact</a>
+      <a class="hire-btn" href="#contact">Hire me ↗</a>
+    </nav>
+  </header>
+
+  <section class="hero reveal" id="home">
+    <div class="hero-content">
+      <p class="hero-tag">• Available for new projects · 2026</p>
+      <h1>
+        I'm <span class="accent hero-name">May</span><br />
+        Thin Khaing
+      </h1>
+      <p class="hero-meta">
+        <span class="line"></span>
+        UI / UX DESIGNER · YANGON
+      </p>
+      <p class="hero-copy">
+        I design calm, considered digital products that help teams move faster and users
+        feel at home. Two years of crafting interfaces, design systems and end-to-end experiences.
+      </p>
+      <div class="hero-actions">
+        <a class="cta-btn" href="#projects">View my work →</a>
+        <a class="ghost-btn" href="#contact">Let's talk</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <h3>2+</h3>
+          <p>Years experience</p>
+        </div>
+        <div>
+          <h3>110+</h3>
+          <p>Projects shipped</p>
+        </div>
+        <div>
+          <h3>40+</h3>
+          <p>Happy clients</p>
+        </div>
+      </div>
+    </div>
+    <div class="hero-image-wrap">
+      <img
+        class="hero-image"
+        src="images/banner.png"
+        alt="Banner"
+      />
+      <div class="status-card">
+        <div>
+          <h4>Open to work</h4>
+          <p>Replies within 24h</p>
+        </div>
+        <span>✦</span>
+      </div>
+      <div class="hero-glow"></div>
+    </div>
+  </section>
+
+  <section class="skill-ribbon reveal" aria-label="Core skills and tools">
+    <div class="skill-ribbon-track">
+      @for (item of skillShowcase; track item.name) {
+        <article class="ribbon-item">
+          <img [src]="item.icon" [alt]="item.name + ' icon'" />
+          <span>{{ item.name }}</span>
+        </article>
+      }
+      @for (item of skillShowcase; track 'copy-' + item.name) {
+        <article class="ribbon-item" aria-hidden="true">
+          <img [src]="item.icon" [alt]="item.name + ' icon'" />
+          <span>{{ item.name }}</span>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="about reveal" id="about">
+    <div class="about-head">
+      <p class="section-pill">• About me</p>
+      <h2>Designing with <span class="accent hero-name">intention.</span></h2>
+    </div>
+    <div class="about-layout">
+      <div class="about-photo-wrap">
+        <img
+          src="images/Aboutme.png"
+          alt="About me photo"
+          class="about-photo"
+        />
+      </div>
+      <div class="about-content">
+        <p class="about-intro">
+          I'm a multidisciplinary designer focused on the <span class="accent">quiet details</span>
+          that make a product feel thoughtful - typography, motion, and the spaces between.
+        </p>
+        <p class="about-copy">
+          Over the last two years I've partnered with startups and growing teams to ship products
+          people genuinely enjoy. My practice blends research, systems thinking, and a deep respect for craft.
+        </p>
+        <div class="about-stat-grid">
+          @for (stat of aboutStats; track stat.label) {
+            <article class="about-stat-card">
+              <div class="about-stat-top">
+                <h3>{{ stat.value }}</h3>
+                <span> {{ stat.suffix }} </span>
+              </div>
+              <p class="dot-label">{{ stat.label }}</p>
+              <p>{{ stat.note }}</p>
+            </article>
+          }
+        </div>
+        <div class="about-meta-grid">
+          @for (item of aboutMeta; track item.label) {
+            <div class="about-meta-item">
+              <p>{{ item.label }}</p>
+              <h4>{{ item.value }}</h4>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="services reveal" id="services">
+    <div class="services-head">
+      <div>
+        <p class="section-pill">Skills · 02</p>
+        <h2>What I do <span class="accent hero-name">best.</span></h2>
+      </div>
+      <p>6 core disciplines</p>
+    </div>
+    <div class="service-grid">
+      @for (service of services; track service.title) {
+        <article class="service-card">
+          <div class="service-top">
+            <span class="service-icon">{{ service.icon }}</span>
+            <h3>{{ service.title }}</h3>
+            <p>{{ service.progress }}%</p>
+          </div>
+          <div class="progress-track">
+            <span [style.width.%]="service.progress"></span>
+          </div>
+          <p>Proficiency</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="projects project-showcase reveal" id="projects">
+    <div class="showcase-head">
+      <div>
+        <p class="section-pill">• Selected work</p>
+        <h2>Recent <span class="accent">projects.</span></h2>
+      </div>
+    </div>
+
+    <div class="showcase-stack">
+      @for (project of projects; track project.titleAccent; let i = $index) {
+        <article
+          class="showcase-card"
+          [style.--card-accent]="project.accent"
+          [attr.data-theme]="project.theme"
+        >
+          <div class="showcase-card-body">
+            <div class="showcase-info">
+              <p class="showcase-meta">
+                <span>{{ project.category }}</span>
+                <em>{{ project.date }}</em>
+              </p>
+              <h3>
+                {{ project.titleStart }} <span class="accent">{{ project.titleAccent }}</span>
+                {{ project.titleEnd }}
+              </h3>
+              <p class="showcase-desc">{{ project.description }}</p>
+              <ul class="showcase-modules">
+                @for (module of project.modules; track module) {
+                  <li>{{ module }}</li>
+                }
+              </ul>
+              <div class="badge-row">
+                @for (tag of project.tags; track tag) {
+                  <span class="badge">{{ tag }}</span>
+                }
+              </div>
+              <button type="button" class="case-btn">{{ project.actionLabel }} ↗</button>
+            </div>
+
+            <div class="showcase-visual">
+              <img class="desktop-shot" src="images/SmartHR.png" alt="SmartHR project screenshot" />
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="experience reveal" id="experience">
+    <div class="experience-head">
+      <p class="experience-pill">+ EXPERIENCE - 04</p>
+      <h2>A timeline of <span class="accent hero-name">craft.</span></h2>
+      <p>two years across studios, startups and product teams.</p>
+    </div>
+
+    <div class="experience-timeline">
+      @for (item of timeline; track item.period; let i = $index) {
+        <article
+          class="experience-card"
+          [class.align-right]="i % 2 === 1"
+          [style.--experience-accent]="item.accent"
+        >
+          <span class="timeline-dot"></span>
+          <div class="experience-card-inner">
+            <div class="experience-meta">
+              <span>{{ item.period }}</span>
+              <em>{{ item.index }}</em>
+            </div>
+            <div class="experience-role">
+              <span>{{ item.initial }}</span>
+              <div>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.company }}</p>
+              </div>
+            </div>
+            <p class="experience-copy">{{ item.description }}</p>
+            <div class="experience-tags">
+              @for (tag of item.tags; track tag) {
+                <span>{{ tag }}</span>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="recommendations reveal" id="recommendations">
+    <div class="recommendation-head">
+      <p class="recommendation-pill">+ RECOMMENDATIONS - 05</p>
+      <h2>Kind words from <span class="accent hero-name">people</span> I've worked with.</h2>
+      <p>A few notes from founders, product leads and teammates I've had the privilege to design alongside.</p>
+    </div>
+
+    <article class="recommendation-feature">
+      <div class="feature-quote">
+        <span class="quote-mark">99</span>
+        <p>"May doesn't just design interfaces - she designs <span class="accent">conviction.</span> Every flow, every motion, every pixel feels considered. She's the rare designer who makes the whole team raise their game."</p>
+        <div class="person-row">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" alt="Phin Cherry portrait" />
+          <div>
+            <h3>Hnin Cherry</h3>
+            <p>Senior UI/UX Designer</p>
+          </div>
+        </div>
+      </div>
+      <div class="rating-panel">
+        @for (stat of recommendationStats; track stat.label) {
+          <div>
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
+          </div>
+        }
+      </div>
+    </article>
+
+    <div class="recommendation-grid">
+      @for (item of recommendations; track item.name) {
+        <article class="recommendation-card" [style.--recommendation-accent]="item.accent">
+          <div class="recommendation-card-top">
+            <span>99</span>
+            <strong aria-label="5 star rating">*****</strong>
+          </div>
+          <p>"{{ item.quote }}"</p>
+          <div class="person-row">
+            <img [src]="item.avatar" [alt]="item.name + ' portrait'" />
+            <div>
+              <h3>{{ item.name }}</h3>
+              <p>{{ item.role }}</p>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="contact reveal" id="contact">
+    <div class="contact-head">
+      <p class="contact-pill">+ LET'S COLLABORATE</p>
+      <h2>Have a project <span class="accent hero-name">in mind?</span></h2>
+      <p>I'm currently taking on a few select projects for 2026. If you're building something that deserves great design, I'd love to hear about it.</p>
+    </div>
+    <a class="contact-email" href="mailto:mtkhaing.psn17@gmail.com"><span>✉</span> mtkhaing.psn17@gmail.com <span>↗</span></a>
+    <div class="contact-chips">
+      <span>Yangon, Myanmar</span>
+      <span>+95 9 770 502 150</span>
+      <span>Reply within 24h</span>
+    </div>
+    <div class="social-row" aria-label="Social links">
+      <a href="#" aria-label="LinkedIn">in</a>
+      <a href="#" aria-label="GitHub">git</a>
+    </div>
+  </section>
+
+  <button class="back-to-top" type="button" (click)="scrollToTop()" aria-label="Scroll to top">
+    &uarr;
+  </button>
+</main>
