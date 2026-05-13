@@ -154,7 +154,6 @@ export class App implements AfterViewInit, OnDestroy {
       theme: 'green',
       accent: '#22c55e',
       category: 'Web Product',
-      date: '01 / 04 · 2025',
       titleStart: 'Streamlined',
       titleAccent: 'HR',
       titleEnd: 'Platform',
@@ -162,13 +161,13 @@ export class App implements AfterViewInit, OnDestroy {
       modules: ['Employee Management', 'Attendance Tracking', 'Payroll & Salary'],
       tags: ['UI/UX', 'Web App', 'Design System'],
       imageDesktop: 'images/SmartHR.png',
-      actionLabel: 'View case study'
+      actionLabel: 'View case study',
+      date: '2024'
     },
     {
       theme: 'blue',
       accent: '#2f80ed',
       category: 'Enterprise Product',
-      date: '02 / 04 · 2025',
       titleStart: 'Unified',
       titleAccent: 'ERP',
       titleEnd: 'Operations',
@@ -176,13 +175,13 @@ export class App implements AfterViewInit, OnDestroy {
       modules: ['Inventory Flow', 'Finance & Reports', 'Supply Chain'],
       tags: ['ERP', 'Dashboard', 'Enterprise UX'],
       imageDesktop: 'images/SmartERP.png',
-      actionLabel: 'View case study'
+      actionLabel: 'View case study',
+      date: '2024'
     },
     {
       theme: 'orange',
       accent: '#f97316',
       category: 'Website Portfolio',
-      date: '03 / 04 · 2025',
       titleStart: 'Premium',
       titleAccent: 'Web',
       titleEnd: 'Experiences',
@@ -190,13 +189,13 @@ export class App implements AfterViewInit, OnDestroy {
       modules: ['Landing Showcase', 'Brand Story', 'Responsive Systems'],
       tags: ['Luxury UI', 'Marketing Site', 'Motion Design'],
       imageDesktop: 'images/SmartWeb.png',
-      actionLabel: 'View case study'
+      actionLabel: 'View case study',
+      date: '2025'
     },
     {
       theme: 'purple',
       accent: '#a855f7',
       category: 'Mobile Suite',
-      date: '04 / 04 · 2025',
       titleStart: 'Business',
       titleAccent: 'Mobile',
       titleEnd: 'Suite',
@@ -204,7 +203,8 @@ export class App implements AfterViewInit, OnDestroy {
       modules: ['HR Mobile', 'ERP Mobile', 'Cross-device Continuity'],
       tags: ['iOS/Android', 'Responsive UX', 'Business Apps'],
       imageDesktop: 'images/SmartMobile.png',
-      actionLabel: 'View case study'
+      actionLabel: 'View case study',
+      date: '2025'
     }
   ];
 
@@ -220,21 +220,21 @@ export class App implements AfterViewInit, OnDestroy {
       name: 'Hpone Pyae Ko Ko',
       role: 'UI/UX Designer',
       accent: '#ff6b2b',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80'
+      avatar: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=120&q=80'
     },
     {
       quote: 'Working with May was the most productive design partnership we have had. She thinks in systems, ships pixel-perfect work, and pushes us to be better.',
       name: 'Khoon Sett Hein',
       role: 'Backend Developer',
       accent: '#4aa3ff',
-      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&q=80'
+      avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=120&q=80'
     },
     {
       quote: 'She brought clarity to a product that had been drifting for months. Two sprints in, our funnel jumped 28%. Truly thoughtful, end-to-end design.',
       name: 'Phyu Phyu May Maung',
       role: 'Full Stack Developer',
       accent: '#a78bfa',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80'
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&q=80'
     }
   ];
 
@@ -266,6 +266,40 @@ export class App implements AfterViewInit, OnDestroy {
     this.setupCursorGlow();
     this.setupStickyNav();
     this.setupActiveSectionTracking();
+    this.setupAboutCardGlow();
+    this.setupHeroChipReveal();
+    this.setupTimelineProgress();
+  }
+
+  private setupTimelineProgress(): void {
+    const progress = this.host.nativeElement.querySelector('.timeline-progress') as HTMLElement | null;
+    const timeline = this.host.nativeElement.querySelector('.experience-timeline') as HTMLElement | null;
+    if (!progress || !timeline) return;
+
+    ScrollTrigger.create({
+      trigger: timeline,
+      start: 'top 70%',
+      end: 'bottom 75%',
+      scrub: 0.6,
+      onUpdate: (self) => {
+        progress.style.setProperty('--progress', String(self.progress));
+      }
+    });
+  }
+
+  private setupHeroChipReveal(): void {
+    const chips = this.host.nativeElement.querySelectorAll('.hero-chip') as NodeListOf<HTMLElement>;
+    if (!chips.length) return;
+
+    gsap.from(chips, {
+      autoAlpha: 0,
+      scale: 0.85,
+      y: 12,
+      duration: 0.7,
+      ease: 'back.out(1.6)',
+      stagger: 0.18,
+      delay: 0.9
+    });
   }
 
   ngOnDestroy(): void {
@@ -295,7 +329,7 @@ export class App implements AfterViewInit, OnDestroy {
     });
 
     const groups = [
-      { root: '.hero', targets: '.hero-content > *, .hero-image-wrap', start: 'top 78%', y: 44 },
+      { root: '.hero', targets: '.hero-tag, .hero h1, .hero-meta, .hero-copy, .hero-actions, .hero-stat, .hero-image-frame, .status-card', start: 'top 82%', y: 44 },
       { root: '.skill-ribbon', targets: '.ribbon-item', start: 'top 88%', y: 20 },
       { root: '.about', targets: '.about-head, .about-photo-wrap, .about-content > *', start: 'top 70%', y: 54 },
       { root: '.services', targets: '.services-head, .service-card', start: 'top 72%', y: 42 },
@@ -465,11 +499,11 @@ export class App implements AfterViewInit, OnDestroy {
 
     this.projectScrollTrigger?.kill();
     this.projectScrollTrigger = ScrollTrigger.create({
-      trigger: '.project-showcase',
-      start: 'top 10%',
+      trigger: '.showcase-stack',
+      start: 'top top+=7.5%',
       end: `+=${cards.length * 640}`,
       scrub: 1,
-      pin: true,
+      pin: '.showcase-stack',
       anticipatePin: 1,
       animation: timeline,
       onUpdate: (self) => {
@@ -607,6 +641,27 @@ export class App implements AfterViewInit, OnDestroy {
         btn.removeEventListener('mousemove', move);
         btn.removeEventListener('mouseleave', reset);
       });
+    });
+  }
+
+  private setupAboutCardGlow(): void {
+    if (window.matchMedia('(hover: none)').matches) return;
+
+    const cards = this.host.nativeElement.querySelectorAll(
+      '.about-stat-card, .service-card'
+    ) as NodeListOf<HTMLElement>;
+
+    cards.forEach((card) => {
+      const move = (e: MouseEvent) => {
+        const rect = card.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--mx', `${x}%`);
+        card.style.setProperty('--my', `${y}%`);
+      };
+
+      card.addEventListener('mousemove', move);
+      this.hoverCleanupFns.push(() => card.removeEventListener('mousemove', move));
     });
   }
 

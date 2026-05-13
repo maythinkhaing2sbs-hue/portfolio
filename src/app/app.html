@@ -15,11 +15,18 @@
   </header>
 
   <section class="hero reveal" id="home">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="hero-blob hero-blob-orange" aria-hidden="true"></div>
+    <div class="hero-blob hero-blob-blue" aria-hidden="true"></div>
+
     <div class="hero-content">
-      <p class="hero-tag">• Available for new projects · 2026</p>
+      <p class="hero-tag">
+        <span class="tag-dot" aria-hidden="true"></span>
+        Available for new projects · 2026
+      </p>
       <h1>
         I'm <span class="accent hero-name">May</span><br />
-        Thin Khaing
+        <span class="hero-lastname">Thin Khaing</span>
       </h1>
       <p class="hero-meta">
         <span class="line"></span>
@@ -30,30 +37,43 @@
         feel at home. Two years of crafting interfaces, design systems and end-to-end experiences.
       </p>
       <div class="hero-actions">
-        <a class="cta-btn" href="#projects">View my work →</a>
+        <a class="cta-btn" href="#projects">
+          <span class="cta-shine" aria-hidden="true"></span>
+          <span class="cta-label">View my work</span>
+          <span class="cta-arrow" aria-hidden="true">→</span>
+        </a>
         <a class="ghost-btn" href="#contact">Let's talk</a>
       </div>
       <div class="hero-stats">
-        <div>
+        <div class="hero-stat">
           <h3 class="stat-count" data-count="2" data-suffix="+">2+</h3>
           <p>Years experience</p>
         </div>
-        <div>
+        <div class="hero-stat">
           <h3 class="stat-count" data-count="110" data-suffix="+">110+</h3>
           <p>Projects shipped</p>
         </div>
-        <div>
+        <div class="hero-stat">
           <h3 class="stat-count" data-count="40" data-suffix="+">40+</h3>
           <p>Happy clients</p>
         </div>
       </div>
     </div>
     <div class="hero-image-wrap">
-      <img
-        class="hero-image"
-        src="images/banner.png"
-        alt="Banner"
-      />
+      <div class="hero-image-frame">
+        <span class="hero-ring" aria-hidden="true"></span>
+        <img
+          class="hero-image"
+          src="images/banner.png"
+          alt="Banner"
+        />
+        <span class="hero-chip hero-chip-1" aria-hidden="true">
+          <span class="chip-dot"></span> Figma · Sketch
+        </span>
+        <span class="hero-chip hero-chip-2" aria-hidden="true">
+          ✦ UI Systems
+        </span>
+      </div>
       <div class="status-card">
         <div>
           <h4>Open to work</h4>
@@ -84,19 +104,31 @@
 
   <section class="about reveal" id="about">
     <div class="about-head">
-      <p class="section-pill">• About me</p>
+      <p class="section-pill"><span class="pill-dot"></span> About me</p>
       <h2>Designing with <span class="accent hero-name">intention.</span></h2>
     </div>
     <div class="about-layout">
       <div class="about-photo-wrap">
-        <img
-          src="images/Aboutme.png"
-          alt="About me photo"
-          class="about-photo"
-        />
+        <div class="about-photo-frame">
+          <span class="photo-ring" aria-hidden="true"></span>
+          <span class="photo-glow" aria-hidden="true"></span>
+          <img
+            src="images/Aboutme.png"
+            alt="About me photo"
+            class="about-photo"
+          />
+          <div class="about-photo-badge">
+            <span class="badge-dot" aria-hidden="true"></span>
+            <div>
+              <p>Available for projects</p>
+              <h4>2026 · Selective</h4>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="about-content">
         <p class="about-intro">
+          <span class="intro-bar" aria-hidden="true"></span>
           I'm a multidisciplinary designer focused on the <span class="accent">quiet details</span>
           that make a product feel thoughtful - typography, motion, and the spaces between.
         </p>
@@ -107,6 +139,7 @@
         <div class="about-stat-grid">
           @for (stat of aboutStats; track stat.label) {
             <article class="about-stat-card">
+              <span class="stat-glow" aria-hidden="true"></span>
               <div class="about-stat-top">
                 <h3 class="stat-count" [attr.data-count]="stat.value">{{ stat.value }}</h3>
                 <span> {{ stat.suffix }} </span>
@@ -131,23 +164,32 @@
   <section class="services reveal" id="services">
     <div class="services-head">
       <div>
-        <p class="section-pill">Skills · 02</p>
+        <p class="section-pill"><span class="pill-dot"></span> Skills · 02</p>
         <h2>What I do <span class="accent hero-name">best.</span></h2>
       </div>
-      <p>6 core disciplines</p>
+      <p class="services-meta"><span class="meta-dot"></span> 6 core disciplines</p>
     </div>
     <div class="service-grid">
-      @for (service of services; track service.title) {
-        <article class="service-card">
+      @for (service of services; track service.title; let i = $index) {
+        <article class="service-card" [attr.data-index]="i">
+          <span class="card-glow" aria-hidden="true"></span>
           <div class="service-top">
-            <span class="service-icon">{{ service.icon }}</span>
+            <span class="service-icon">
+              <span class="icon-bg" aria-hidden="true"></span>
+              <span class="icon-emoji">{{ service.icon }}</span>
+            </span>
             <h3>{{ service.title }}</h3>
-            <p>{{ service.progress }}%</p>
+            <p class="service-percent">{{ service.progress }}%</p>
           </div>
           <div class="progress-track">
-            <span [style.width.%]="service.progress"></span>
+            <span class="progress-fill" [style.width.%]="service.progress">
+              <span class="progress-thumb" aria-hidden="true"></span>
+            </span>
           </div>
-          <p>Proficiency</p>
+          <div class="service-foot">
+            <p class="proficiency-label">Proficiency</p>
+            <span class="service-arrow" aria-hidden="true">→</span>
+          </div>
         </article>
       }
     </div>
@@ -219,21 +261,29 @@
 
   <section class="experience reveal" id="experience">
     <div class="experience-head">
-      <p class="experience-pill">+ EXPERIENCE - 04</p>
+      <p class="experience-pill"><span class="pill-dot"></span> EXPERIENCE · 04</p>
       <h2>A timeline of <span class="accent hero-name">craft.</span></h2>
       <p>two years across studios, startups and product teams.</p>
     </div>
 
     <div class="experience-timeline">
+      <span class="timeline-progress" aria-hidden="true"></span>
       @for (item of timeline; track item.period; let i = $index) {
         <article
           class="experience-card"
           [class.align-right]="i % 2 === 1"
           [style.--experience-accent]="item.accent"
         >
-          <span class="timeline-dot"></span>
+          <span class="timeline-dot">
+            <span class="timeline-dot-inner" aria-hidden="true"></span>
+          </span>
+          <span class="timeline-arm" aria-hidden="true"></span>
           <div class="experience-card-inner">
+            <span class="card-corner" aria-hidden="true"></span>
             <div class="experience-meta">
+              @if (i === 0) {
+                <span class="current-badge"><span class="current-dot"></span> Current</span>
+              }
               <span>{{ item.period }}</span>
               <em>{{ item.index }}</em>
             </div>
@@ -268,7 +318,7 @@
         <span class="quote-mark">99</span>
         <p>"May doesn't just design interfaces - she designs <span class="accent">conviction.</span> Every flow, every motion, every pixel feels considered. She's the rare designer who makes the whole team raise their game."</p>
         <div class="person-row">
-          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" alt="Phin Cherry portrait" />
+          <img src="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=120&q=80" alt="Hnin Cherry portrait" />
           <div>
             <h3>Hnin Cherry</h3>
             <p>Senior UI/UX Designer</p>
@@ -306,20 +356,29 @@
   </section>
 
   <section class="contact reveal" id="contact">
+    <div class="contact-grid" aria-hidden="true"></div>
+    <div class="contact-blob contact-blob-orange" aria-hidden="true"></div>
+    <div class="contact-blob contact-blob-blue" aria-hidden="true"></div>
+
     <div class="contact-head">
-      <p class="contact-pill">+ LET'S COLLABORATE</p>
+      <p class="contact-pill"><span class="pill-dot"></span> LET'S COLLABORATE</p>
       <h2>Have a project <span class="accent hero-name">in mind?</span></h2>
       <p>I'm currently taking on a few select projects for 2026. If you're building something that deserves great design, I'd love to hear about it.</p>
     </div>
-    <a class="contact-email" href="mailto:mtkhaing.psn17@gmail.com"><span>✉</span> mtkhaing.psn17@gmail.com <span>↗</span></a>
+    <a class="contact-email" href="mailto:mtkhaing.psn17@gmail.com">
+      <span class="email-shine" aria-hidden="true"></span>
+      <span class="email-icon" aria-hidden="true">✉</span>
+      <span class="email-text">mtkhaing.psn17@gmail.com</span>
+      <span class="email-arrow" aria-hidden="true">↗</span>
+    </a>
     <div class="contact-chips">
-      <span>📍 Yangon, Myanmar</span>
-      <span>📞 +95 9 770 502 150</span>
-      <span>⚡ Reply within 24h</span>
+      <span><span class="chip-icon">📍</span> Yangon, Myanmar</span>
+      <span><span class="chip-icon">📞</span> +95 9 770 502 150</span>
+      <span><span class="chip-icon">⚡</span> Reply within 24h</span>
     </div>
     <div class="social-row" aria-label="Social links">
-      <a href="#" aria-label="LinkedIn">in</a>
-      <a href="#" aria-label="GitHub">git</a>
+      <a href="#" aria-label="LinkedIn"><span>in</span></a>
+      <a href="#" aria-label="GitHub"><span>git</span></a>
     </div>
   </section>
 
