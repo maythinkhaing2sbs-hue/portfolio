@@ -110,20 +110,11 @@
     <div class="about-layout">
       <div class="about-photo-wrap">
         <div class="about-photo-frame">
-          <span class="photo-ring" aria-hidden="true"></span>
-          <span class="photo-glow" aria-hidden="true"></span>
           <img
-            src="images/Aboutme.png"
+            src="images/me.png"
             alt="About me photo"
             class="about-photo"
           />
-          <div class="about-photo-badge">
-            <span class="badge-dot" aria-hidden="true"></span>
-            <div>
-              <p>Available for projects</p>
-              <h4>2026 · Selective</h4>
-            </div>
-          </div>
         </div>
       </div>
       <div class="about-content">
@@ -149,15 +140,47 @@
             </article>
           }
         </div>
-        <div class="about-meta-grid">
-          @for (item of aboutMeta; track item.label) {
-            <div class="about-meta-item">
-              <p>{{ item.label }}</p>
-              <h4>{{ item.value }}</h4>
-            </div>
-          }
-        </div>
       </div>
+    </div>
+    <div class="about-meta-grid">
+      @for (item of aboutMeta; track item.label; let i = $index) {
+        <div class="about-meta-item" [attr.data-index]="i + 1">
+          <span class="meta-icon" aria-hidden="true">
+            @switch (item.label) {
+              @case ('Based in') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21s-7-7.1-7-12a7 7 0 1 1 14 0c0 4.9-7 12-7 12z"/>
+                  <circle cx="12" cy="9" r="2.6"/>
+                </svg>
+              }
+              @case ('Languages') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9"/>
+                  <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>
+                </svg>
+              }
+              @case ('Currently') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="7" width="18" height="13" rx="2"/>
+                  <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <path d="M3 13h18"/>
+                </svg>
+              }
+              @case ('Focus') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9"/>
+                  <circle cx="12" cy="12" r="5"/>
+                  <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                </svg>
+              }
+            }
+          </span>
+          <span class="meta-index">{{ '0' + (i + 1) }}</span>
+          <p>{{ item.label }}</p>
+          <h4>{{ item.value }}</h4>
+          <span class="meta-underline" aria-hidden="true"></span>
+        </div>
+      }
     </div>
   </section>
 
@@ -243,6 +266,141 @@
                   <span class="badge">{{ tag }}</span>
                 }
               </div>
+              @if (project.link) {
+                <a
+                  class="project-link"
+                  [href]="project.link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  [attr.aria-label]="'Visit ' + project.titleStart + ' ' + project.titleAccent + ' live site'"
+                >
+                  <span class="project-link-bg" aria-hidden="true"></span>
+                  <span class="project-link-shine" aria-hidden="true"></span>
+                  <span class="project-link-text">
+                    <span class="project-link-label">Visit live site</span>
+                    <span class="project-link-url">{{ formatHost(project.link) }}</span>
+                  </span>
+                  <span class="project-link-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="7" y1="17" x2="17" y2="7"></line>
+                      <polyline points="7 7 17 7 17 17"></polyline>
+                    </svg>
+                  </span>
+                </a>
+              }
+
+              @if (project.links?.length) {
+                <div class="project-link-grid">
+                  <div class="project-link-grid-head">
+                    <span class="project-link-status">
+                      <span class="status-pulse"></span>
+                      Live · {{ project.date }}
+                    </span>
+                    <span class="grid-head-divider"></span>
+                    <span class="project-link-index">{{ project.links!.length }} live sites</span>
+                  </div>
+                  <div class="project-link-grid-list">
+                    @for (item of project.links!; track item.url; let i = $index) {
+                      <a
+                        class="project-link-card"
+                        [href]="item.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [attr.aria-label]="'Visit ' + item.label"
+                        [style.--card-delay]="i * 0.08 + 's'"
+                      >
+                        <span class="link-card-glow" aria-hidden="true"></span>
+                        <span class="link-card-index">{{ '0' + (i + 1) }}</span>
+                        <span class="link-card-body">
+                          <span class="link-card-label">{{ item.label }}</span>
+                          <span class="link-card-host">
+                            <span class="url-dot"></span>
+                            {{ item.host }}
+                          </span>
+                        </span>
+                        <span class="link-card-arrow" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="7" y1="17" x2="17" y2="7"></line>
+                            <polyline points="9 7 17 7 17 15"></polyline>
+                          </svg>
+                        </span>
+                      </a>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (project.appStore || project.playStore) {
+                <div class="project-store-row">
+                  <div class="project-store-head">
+                    <span class="project-link-status">
+                      <span class="status-pulse"></span>
+                      Available now
+                    </span>
+                    <span class="grid-head-divider"></span>
+                    <span class="project-link-index">Download the app</span>
+                  </div>
+                  <div class="project-store-badges">
+                    @if (project.appStore) {
+                      <a
+                        class="store-badge store-badge-apple"
+                        [href]="project.appStore"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Download on the App Store"
+                      >
+                        <span class="store-badge-shine" aria-hidden="true"></span>
+                        <svg class="store-badge-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M17.564 12.708c-.012-2.054 1.683-3.04 1.76-3.087-.96-1.405-2.452-1.597-2.985-1.618-1.27-.128-2.481.748-3.123.748-.647 0-1.642-.731-2.7-.71-1.39.02-2.673.81-3.388 2.055-1.444 2.502-.367 6.197 1.041 8.225.69.992 1.51 2.107 2.585 2.066 1.04-.042 1.43-.668 2.687-.668 1.246 0 1.612.668 2.708.647 1.118-.02 1.825-1.012 2.508-2.01.79-1.155 1.115-2.27 1.131-2.327-.025-.012-2.168-.832-2.224-3.32zM15.522 6.42c.567-.687.95-1.643.846-2.59-.815.033-1.802.543-2.388 1.23-.525.607-.984 1.578-.86 2.51.91.07 1.834-.464 2.402-1.15z"/>
+                        </svg>
+                        <span class="store-badge-text">
+                          <span class="store-badge-top">Download on the</span>
+                          <span class="store-badge-bottom">App Store</span>
+                        </span>
+                      </a>
+                    }
+                    @if (project.playStore) {
+                      <a
+                        class="store-badge store-badge-google"
+                        [href]="project.playStore"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Get it on Google Play"
+                      >
+                        <span class="store-badge-shine" aria-hidden="true"></span>
+                        <svg class="store-badge-logo store-badge-logo-play" viewBox="0 0 512 512" aria-hidden="true">
+                          <defs>
+                            <linearGradient id="play-grad-1" x1="0" y1="0" x2="1" y2="1">
+                              <stop offset="0%" stop-color="#00D9FF"/>
+                              <stop offset="100%" stop-color="#00A2FF"/>
+                            </linearGradient>
+                            <linearGradient id="play-grad-2" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stop-color="#FFE000"/>
+                              <stop offset="100%" stop-color="#FFBD00"/>
+                            </linearGradient>
+                            <linearGradient id="play-grad-3" x1="0" y1="0" x2="1" y2="1">
+                              <stop offset="0%" stop-color="#FF3A44"/>
+                              <stop offset="100%" stop-color="#C31162"/>
+                            </linearGradient>
+                            <linearGradient id="play-grad-4" x1="0" y1="0" x2="1" y2="1">
+                              <stop offset="0%" stop-color="#00F076"/>
+                              <stop offset="100%" stop-color="#00B156"/>
+                            </linearGradient>
+                          </defs>
+                          <path fill="url(#play-grad-1)" d="M40 32v448c0 11 6 20 16 25l249-249L56 7c-10 5-16 14-16 25z"/>
+                          <path fill="url(#play-grad-2)" d="M386 199l-81-49-49 50 49 49 81-49c12-7 12-25 0-32z"/>
+                          <path fill="url(#play-grad-3)" d="M56 505c4 2 8 3 13 3 5 0 11-2 16-5l220-127-49-49z"/>
+                          <path fill="url(#play-grad-4)" d="M56 7l250 249 49-50L85 4c-5-3-10-4-16-4-5 0-9 1-13 3z"/>
+                        </svg>
+                        <span class="store-badge-text">
+                          <span class="store-badge-top">GET IT ON</span>
+                          <span class="store-badge-bottom">Google Play</span>
+                        </span>
+                      </a>
+                    }
+                  </div>
+                </div>
+              }
             </div>
 
             <div class="showcase-visual">

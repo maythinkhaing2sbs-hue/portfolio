@@ -10,6 +10,31 @@ import {
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+interface ProjectLink {
+  label: string;
+  host: string;
+  url: string;
+}
+
+interface ProjectCard {
+  theme: string;
+  accent: string;
+  category: string;
+  titleStart: string;
+  titleAccent: string;
+  titleEnd: string;
+  description: string;
+  modules: string[];
+  tags: string[];
+  imageDesktop: string;
+  actionLabel: string;
+  date: string;
+  link?: string;
+  links?: ProjectLink[];
+  appStore?: string;
+  playStore?: string;
+}
+
 @Component({
   selector: 'app-root',
   imports: [CommonModule],
@@ -121,7 +146,7 @@ export class App implements AfterViewInit, OnDestroy {
       period: '2025 - Present',
       index: '01 / 04',
       initial: 'S',
-      title: 'UI/UX Designer',
+      title: 'Mid UI/UX Designer',
       company: 'Systematic Business Solution Co.,Ltd · Yangon',
       accent: '#ff6b2b',
       description: 'Designed intuitive user experiences, developed modern interfaces, collaborated with developers,conducted usability testing, and delivered visually engaging digital products.',
@@ -149,7 +174,7 @@ export class App implements AfterViewInit, OnDestroy {
     },
   ];
 
-  readonly projects = [
+  readonly projects: ProjectCard[] = [
     {
       theme: 'green',
       accent: '#22c55e',
@@ -162,7 +187,8 @@ export class App implements AfterViewInit, OnDestroy {
       tags: ['UI/UX', 'Web App', 'Design System'],
       imageDesktop: 'images/SmartHR.png',
       actionLabel: 'View case study',
-      date: '2024'
+      date: '2024',
+      link: 'https://www.smarticwork.com/smart-hr'
     },
     {
       theme: 'blue',
@@ -176,7 +202,8 @@ export class App implements AfterViewInit, OnDestroy {
       tags: ['ERP', 'Dashboard', 'Enterprise UX'],
       imageDesktop: 'images/SmartERP.png',
       actionLabel: 'View case study',
-      date: '2024'
+      date: '2024',
+      link: 'https://www.smarticwork.com/smart-erp'
     },
     {
       theme: 'orange',
@@ -190,7 +217,11 @@ export class App implements AfterViewInit, OnDestroy {
       tags: ['Luxury UI', 'Marketing Site', 'Motion Design'],
       imageDesktop: 'images/SmartWeb.png',
       actionLabel: 'View case study',
-      date: '2025'
+      date: '2025',
+      links: [
+        { label: 'AMA Myanmar', host: 'ama-mm.com', url: 'https://ama-mm.com/' },
+        { label: 'Smart Landing', host: 'smarticwork.com/smart-landing', url: 'https://www.smarticwork.com/smart-landing' }
+      ]
     },
     {
       theme: 'purple',
@@ -204,7 +235,9 @@ export class App implements AfterViewInit, OnDestroy {
       tags: ['iOS/Android', 'Responsive UX', 'Business Apps'],
       imageDesktop: 'images/SmartMobile.png',
       actionLabel: 'View case study',
-      date: '2025'
+      date: '2025',
+      appStore: 'https://apps.apple.com/us/app/smart-hr-pro/id6752917496',
+      playStore: 'https://play.google.com/store/apps/details?id=com.systematic.pro_smart_duty'
     }
   ];
 
@@ -245,6 +278,7 @@ export class App implements AfterViewInit, OnDestroy {
       this.setupSectionEntranceAnimations();
       this.setupCounterAnimations();
       this.setupProgressBarAnimations();
+      
 
       gsap.to('.hero-image', {
         yPercent: -12,
@@ -269,6 +303,93 @@ export class App implements AfterViewInit, OnDestroy {
     this.setupAboutCardGlow();
     this.setupHeroChipReveal();
     this.setupTimelineProgress();
+    this.setupAboutPhotoAnimation();
+    this.setupProjectLinkAnimation();
+  }
+
+  private setupProjectLinkAnimation(): void {
+    const links = this.host.nativeElement.querySelectorAll('.project-link') as NodeListOf<HTMLElement>;
+    if (!links.length) return;
+
+    links.forEach((link) => {
+      gsap.from(link, {
+        autoAlpha: 0,
+        y: 18,
+        scale: 0.94,
+        duration: 0.9,
+        ease: 'back.out(1.7)',
+        scrollTrigger: {
+          trigger: link,
+          start: 'top 90%',
+          toggleActions: 'play none none reverse'
+        }
+      });
+
+      const arrow = link.querySelector('.project-link-arrow') as HTMLElement | null;
+      if (!arrow) return;
+
+      const enter = () => gsap.to(arrow, { y: -2, duration: 0.3, ease: 'power2.out' });
+      const leave = () => gsap.to(arrow, { y: 0, duration: 0.4, ease: 'power2.out' });
+
+      link.addEventListener('mouseenter', enter);
+      link.addEventListener('mouseleave', leave);
+
+      this.hoverCleanupFns.push(() => {
+        link.removeEventListener('mouseenter', enter);
+        link.removeEventListener('mouseleave', leave);
+      });
+    });
+  }
+
+  private setupAboutPhotoAnimation(): void {
+    const frame = this.host.nativeElement.querySelector('.about-photo-frame') as HTMLElement | null;
+    const photo = this.host.nativeElement.querySelector('.about-photo') as HTMLElement | null;
+    if (!frame || !photo) return;
+
+    const intro = gsap.timeline({
+      scrollTrigger: {
+        trigger: frame,
+        start: 'top 80%',
+        toggleActions: 'play none none reverse'
+      },
+      defaults: { ease: 'power3.out' }
+    });
+
+    intro
+      .from(frame, { autoAlpha: 0, scale: 0.92, y: 50, duration: 1.1 })
+      .from(photo, { autoAlpha: 0, y: 40, scale: 1.06, duration: 1.2 }, '-=0.85');
+
+    gsap.to(photo, {
+      yPercent: -6,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: frame,
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: true
+      }
+    });
+
+    if (window.matchMedia('(hover: none)').matches) return;
+
+    const onMove = (e: MouseEvent) => {
+      const rect = frame.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      gsap.to(photo, { x: x * 10, y: y * 8, duration: 0.6, ease: 'power3.out' });
+    };
+
+    const onLeave = () => {
+      gsap.to(photo, { x: 0, y: 0, duration: 0.9, ease: 'power3.out' });
+    };
+
+    frame.addEventListener('mousemove', onMove);
+    frame.addEventListener('mouseleave', onLeave);
+
+    this.hoverCleanupFns.push(() => {
+      frame.removeEventListener('mousemove', onMove);
+      frame.removeEventListener('mouseleave', onLeave);
+    });
   }
 
   private setupTimelineProgress(): void {
@@ -331,7 +452,7 @@ export class App implements AfterViewInit, OnDestroy {
     const groups = [
       { root: '.hero', targets: '.hero-tag, .hero h1, .hero-meta, .hero-copy, .hero-actions, .hero-stat, .hero-image-frame, .status-card', start: 'top 82%', y: 44 },
       { root: '.skill-ribbon', targets: '.ribbon-item', start: 'top 88%', y: 20 },
-      { root: '.about', targets: '.about-head, .about-photo-wrap, .about-content > *', start: 'top 70%', y: 54 },
+      { root: '.about', targets: '.about-head, .about-photo-wrap, .about-content > *, .about-meta-grid .about-meta-item', start: 'top 70%', y: 54 },
       { root: '.services', targets: '.services-head, .service-card', start: 'top 72%', y: 42 },
       { root: '.project-showcase', targets: '.showcase-head, .showcase-stack', start: 'top 76%', y: 46 },
       { root: '.experience', targets: '.experience-head, .experience-card', start: 'top 72%', y: 42 },
@@ -538,6 +659,10 @@ export class App implements AfterViewInit, OnDestroy {
         card.style.zIndex = '10';
       }
     });
+  }
+
+  formatHost(url: string): string {
+    return url.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
   }
 
   onProjectImageError(event: Event): void {
