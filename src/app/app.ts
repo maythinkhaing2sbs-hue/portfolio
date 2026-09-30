@@ -39,7 +39,7 @@ interface ProjectCard {
   selector: 'app-root',
   imports: [CommonModule],
   templateUrl: './app.html',
-  styleUrls: ['./app.scss']
+  styleUrls: ['./app.scss', './nav.scss', './hero.scss', './sections.scss', './closing.scss']
 })
 export class App implements AfterViewInit, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
@@ -53,125 +53,176 @@ export class App implements AfterViewInit, OnDestroy {
   private sectionObserver?: IntersectionObserver;
 
   isScrolled = false;
+  navHidden = false;
+  menuOpen = false;
+  emailCopied = false;
   activeSection = 'home';
+  activeTestimonial = 0;
   activeProjectIndex = 0;
 
-  readonly aboutStats = [
-    { value: '110', suffix: '+', label: 'Projects', note: 'Shipped end-to-end' },
-    { value: '40', suffix: '+', label: 'Clients', note: 'Across 12 countries' },
-    { value: '2', suffix: '+', label: 'Years', note: 'Designing products' }
+  readonly preloaderWords = ['May', 'Thin', 'Khaing'];
+
+  /** "UI/UX Designer" split into letters; `i` is the running index used to stagger effects. */
+  readonly roleWords = (() => {
+    let i = 0;
+    return ['UI/UX', 'Designer'].map((word) => word.split('').map((ch) => ({ ch, i: i++ })));
+  })();
+
+  private readonly yangonFormat = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Yangon', hour: '2-digit', minute: '2-digit' });
+  yangonTime = this.yangonFormat.format(new Date());
+  private clockTimer?: number;
+
+  readonly navLinks = [
+    { id: 'home', label: 'Home' },
+    { id: 'about', label: 'About' },
+    { id: 'projects', label: 'Work' },
+    { id: 'experience', label: 'Experience' },
+    { id: 'recommendations', label: 'Reviews' },
+    { id: 'contact', label: 'Contact' }
   ];
 
   readonly aboutMeta = [
-    { label: 'Based in', value: 'Yangon, Myanmar' },
-    { label: 'Languages', value: 'English, Burmese' },
-    { label: 'Currently', value: 'Systematic Solution' },
-    { label: 'Focus', value: 'Product · Brand' }
+    {
+      label: 'Based in',
+      value: 'Yangon, Myanmar',
+      accent: '#ff6b2b',
+      paths: ['M12 21s-7-7.1-7-12a7 7 0 1 1 14 0c0 4.9-7 12-7 12z', 'M12 6.4a2.6 2.6 0 1 0 0 5.2 2.6 2.6 0 0 0 0-5.2z']
+    },
+    {
+      label: 'Languages',
+      value: 'English, Burmese',
+      accent: '#4aa3ff',
+      paths: ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M3 12h18', 'M12 3a14 14 0 0 1 0 18', 'M12 3a14 14 0 0 0 0 18']
+    },
+    {
+      label: 'Currently',
+      value: 'Systematic Solution',
+      accent: '#22c55e',
+      paths: ['M5 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z', 'M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2', 'M3 13h18']
+    },
+    {
+      label: 'Focus',
+      value: 'Product · Brand',
+      accent: '#a78bfa',
+      paths: ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z', 'M12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z']
+    }
+  ];
+
+  readonly aboutStats = [
+    { value: '2', label: 'Years' },
+    { value: '50', label: 'Projects' },
+    { value: '40', label: 'Clients' }
   ];
 
   readonly services = [
     {
-      icon: '🎯',
       title: 'UI Design',
-      progress: 95
+      paths: ['M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z', 'M3 9h18', 'M9 20V9'],
+      description: 'Clean, expressive interfaces with strong hierarchy, confident typography and pixel-level polish.',
+      tags: ['Web apps', 'Dashboards', 'Visual design']
     },
     {
-      icon: '🧭',
       title: 'UX Research',
-      progress: 88
+      paths: ['M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z', 'M21 21l-5-5', 'M8.5 11.5l1.8 1.8 3.4-3.6'],
+      description: 'Interviews, usability testing and journey mapping that turn assumptions into evidence.',
+      tags: ['Interviews', 'Usability', 'Journeys']
     },
     {
-      icon: '🧪',
       title: 'Prototyping',
-      progress: 82
+      paths: ['M4 4l7 17 2.5-7.5L21 11z', 'M14 14l6 6'],
+      description: 'High-fidelity, interactive prototypes that let teams feel the product before it is built.',
+      tags: ['Figma', 'Interactions', 'User flows']
     },
     {
-      icon: '🧱',
       title: 'Design Systems',
-      progress: 90
+      paths: ['M4 4h6v6H4z', 'M14 4h6v6h-6z', 'M4 14h6v6H4z', 'M17 14v6', 'M14 17h6'],
+      description: 'Scalable component libraries and tokens that keep teams consistent and shipping faster.',
+      tags: ['Components', 'Tokens', 'Docs']
     },
     {
-      icon: '📱',
       title: 'Mobile Design',
-      progress: 85
+      paths: ['M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z', 'M11 18h2'],
+      description: 'Native-feeling iOS and Android experiences designed for thumbs, not cursors.',
+      tags: ['iOS', 'Android', 'Responsive']
     },
     {
-      icon: '🤖',
       title: 'AI Prompt Engineering',
-      progress: 93
+      paths: ['M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8z', 'M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z'],
+      description: 'Using AI thoughtfully to speed up research, content and ideation without losing the craft.',
+      tags: ['Claude', 'Workflows', 'Ideation']
     }
   ];
 
   readonly skillShowcase = [
     {
       name: 'Figma',
-      icon: 'https://cdn.simpleicons.org/figma/F24E1E'
+      icon: 'icons/figma.svg'
     },
     {
       name: 'Framer',
-      icon: 'https://cdn.simpleicons.org/framer/ffffff'
+      icon: 'icons/framer.svg'
     },
     {
       name: 'Notion',
-      icon: 'https://cdn.simpleicons.org/notion/ffffff'
+      icon: 'icons/notion.svg'
     },
     {
       name: 'Canva',
-      icon: 'https://cdn.simpleicons.org/canva/00C4CC'
+      icon: 'icons/canva.svg'
     },
     {
       name: 'Claude AI',
-      icon: 'https://cdn.simpleicons.org/anthropic/ffffff'
+      icon: 'icons/claude.svg'
     },
     {
       name: 'WordPress',
-      icon: 'https://cdn.simpleicons.org/wordpress/21759B'
+      icon: 'icons/wordpress.svg'
     },
     {
       name: 'Hostinger',
-      icon: 'https://cdn.simpleicons.org/hostinger/673DE6'
+      icon: 'icons/hostinger.svg'
     },
     {
       name: 'VS Code',
-      icon: 'https://cdn.simpleicons.org/visualstudiocode/007ACC'
+      icon: 'icons/vscode.svg'
     },
     {
       name: 'Angular',
-      icon: 'https://cdn.simpleicons.org/angular/DD0031'
+      icon: 'icons/angular.svg'
     }
   ];
 
   readonly timeline = [
     {
       period: '2025 - Present',
-      index: '01 / 04',
-      initial: 'S',
+      start: '2025',
+      end: 'Present',
       title: 'Mid UI/UX Designer',
-      company: 'Systematic Business Solution Co.,Ltd · Yangon',
+      company: 'Systematic Business Solution Co., Ltd · Yangon',
       accent: '#ff6b2b',
-      description: 'Designed intuitive user experiences, developed modern interfaces, collaborated with developers,conducted usability testing, and delivered visually engaging digital products.',
-      tags: ['Design system', 'UserExperience', 'Web · Mobile']
+      description: 'Designed intuitive user experiences and modern interfaces, collaborated closely with developers, ran usability tests and delivered visually engaging digital products.',
+      tags: ['Design systems', 'User experience', 'Web · Mobile']
     },
     {
       period: '2024 - 2025',
-      index: '02 / 04',
-      initial: 'L',
+      start: '2024',
+      end: '2025',
       title: 'Junior UI/UX Designer',
-      company: 'Systematic Business Solution Co.,Ltd · Yangon',
+      company: 'Systematic Business Solution Co., Ltd · Yangon',
       accent: '#4aa3ff',
-      description: 'Created wireframes, user flows, and interactive prototypes, conducted research, improved usability, and supported senior designers on multiple projects.',
-      tags: ['Wireframing ', 'User flows', 'Mobile Design']
+      description: 'Created wireframes, user flows and interactive prototypes, conducted research, improved usability and supported senior designers across multiple projects.',
+      tags: ['Wireframing', 'User flows', 'Mobile design']
     },
     {
       period: '2023 - 2024',
-      index: '03 / 04',
-      initial: 'B',
+      start: '2023',
+      end: '2024',
       title: 'Web Developer',
-      company: 'Brycen Myanmar Co.,Ltd',
+      company: 'Brycen Myanmar Co., Ltd',
       accent: '#8b5cf6',
-      description: 'Developed HR products with Laravel, integrated backend features, fixed bugs, and improved system performance.',
-      tags: ['Laravel', 'API integration', 'MYSQL']
-    },
+      description: 'Developed HR products with Laravel, integrated backend features, fixed bugs and improved system performance.',
+      tags: ['Laravel', 'API integration', 'MySQL']
+    }
   ];
 
   readonly projects: ProjectCard[] = [
@@ -247,49 +298,49 @@ export class App implements AfterViewInit, OnDestroy {
     { value: '40+', label: 'Endorsements' }
   ];
 
-  readonly recommendations = [
+  readonly testimonials = [
     {
-      quote: "May has a rare ability to translate fuzzy product strategy into interfaces that feel inevitable. Her craft and calm raised the bar for our entire team.",
+      name: 'Hnin Cherry',
+      role: 'Senior UI/UX Designer',
+      accent: '#ff6b2b',
+      quote: "May is one of the most thoughtful designers I've worked with. She always asks the right questions before she starts, and her designs are clean, clear and easy to use. She makes the whole team better."
+    },
+    {
       name: 'Hpone Pyae Ko Ko',
       role: 'UI/UX Designer',
-      accent: '#ff6b2b',
-      avatar: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=120&q=80'
+      accent: '#4aa3ff',
+      quote: 'Working with May is easy. She explains her ideas clearly, listens to feedback without ego, and her Figma files are so well organised that anyone on the team can pick them up.'
     },
     {
-      quote: 'Working with May was the most productive design partnership we have had. She thinks in systems, ships pixel-perfect work, and pushes us to be better.',
       name: 'Khoon Sett Hein',
       role: 'Backend Developer',
-      accent: '#4aa3ff',
-      avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=120&q=80'
+      accent: '#22c55e',
+      quote: 'As a developer, I really appreciate how May hands off her work. Every screen comes with clear specs and edge cases, so we spend less time guessing and more time building.'
     },
     {
-      quote: 'She brought clarity to a product that had been drifting for months. Two sprints in, our funnel jumped 28%. Truly thoughtful, end-to-end design.',
       name: 'Phyu Phyu May Maung',
       role: 'Full Stack Developer',
       accent: '#a78bfa',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&q=80'
+      quote: 'May cares about the small details that users actually notice. She replies quickly, stays calm when plans change, and always delivers on time.'
     }
-  ];
+  ].map((item) => ({
+    ...item,
+    words: item.quote.split(' '),
+    initials: item.name.split(' ').map((part) => part[0]).slice(0, 2).join('')
+  }));
 
   ngAfterViewInit(): void {
     gsap.registerPlugin(ScrollTrigger);
 
     this.gsapContext = gsap.context(() => {
       this.setupSectionEntranceAnimations();
-      this.setupCounterAnimations();
-      this.setupProgressBarAnimations();
-      
-
-      gsap.to('.hero-image', {
-        yPercent: -12,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: true
-        }
-      });
+      this.setupHeroIntro();
+      this.setupHeroScrollParallax();
+      this.setupSectionTitleAnimations();
+      this.setupAboutAnimations();
+      this.setupServiceAnimations();
+      this.setupExperienceAnimations();
+      this.setupClosingAnimations();
     }, this.host.nativeElement);
 
     this.setupHoverEffects();
@@ -300,11 +351,18 @@ export class App implements AfterViewInit, OnDestroy {
     this.setupCursorGlow();
     this.setupStickyNav();
     this.setupActiveSectionTracking();
-    this.setupAboutCardGlow();
-    this.setupHeroChipReveal();
+    this.setupHeroMouseParallax();
+    this.setupServiceSpotlight();
     this.setupTimelineProgress();
-    this.setupAboutPhotoAnimation();
     this.setupProjectLinkAnimation();
+
+    // Triggers were created in code order, not page order; re-sort so pin spacing from the
+    // project showcase is accounted for, and re-measure once web fonts have settled.
+    this.startYangonClock();
+
+    ScrollTrigger.sort();
+    ScrollTrigger.refresh();
+    document.fonts?.ready.then(() => ScrollTrigger.refresh());
   }
 
   private setupProjectLinkAnimation(): void {
@@ -341,61 +399,12 @@ export class App implements AfterViewInit, OnDestroy {
     });
   }
 
-  private setupAboutPhotoAnimation(): void {
-    const frame = this.host.nativeElement.querySelector('.about-photo-frame') as HTMLElement | null;
-    const photo = this.host.nativeElement.querySelector('.about-photo') as HTMLElement | null;
-    if (!frame || !photo) return;
-
-    const intro = gsap.timeline({
-      scrollTrigger: {
-        trigger: frame,
-        start: 'top 80%',
-        toggleActions: 'play none none reverse'
-      },
-      defaults: { ease: 'power3.out' }
-    });
-
-    intro
-      .from(frame, { autoAlpha: 0, scale: 0.92, y: 50, duration: 1.1 })
-      .from(photo, { autoAlpha: 0, y: 40, scale: 1.06, duration: 1.2 }, '-=0.85');
-
-    gsap.to(photo, {
-      yPercent: -6,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: frame,
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: true
-      }
-    });
-
-    if (window.matchMedia('(hover: none)').matches) return;
-
-    const onMove = (e: MouseEvent) => {
-      const rect = frame.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-      gsap.to(photo, { x: x * 10, y: y * 8, duration: 0.6, ease: 'power3.out' });
-    };
-
-    const onLeave = () => {
-      gsap.to(photo, { x: 0, y: 0, duration: 0.9, ease: 'power3.out' });
-    };
-
-    frame.addEventListener('mousemove', onMove);
-    frame.addEventListener('mouseleave', onLeave);
-
-    this.hoverCleanupFns.push(() => {
-      frame.removeEventListener('mousemove', onMove);
-      frame.removeEventListener('mouseleave', onLeave);
-    });
-  }
-
   private setupTimelineProgress(): void {
     const progress = this.host.nativeElement.querySelector('.timeline-progress') as HTMLElement | null;
     const timeline = this.host.nativeElement.querySelector('.experience-timeline') as HTMLElement | null;
     if (!progress || !timeline) return;
+
+    const items = Array.from(timeline.querySelectorAll('.timeline-item')) as HTMLElement[];
 
     ScrollTrigger.create({
       trigger: timeline,
@@ -404,26 +413,200 @@ export class App implements AfterViewInit, OnDestroy {
       scrub: 0.6,
       onUpdate: (self) => {
         progress.style.setProperty('--progress', String(self.progress));
+
+        // Light each role up once the rail's fill has reached its node
+        const filled = self.progress * timeline.offsetHeight;
+        items.forEach((item) => item.classList.toggle('is-reached', item.offsetTop + 24 <= filled));
       }
     });
   }
 
-  private setupHeroChipReveal(): void {
-    const chips = this.host.nativeElement.querySelectorAll('.hero-chip') as NodeListOf<HTMLElement>;
-    if (!chips.length) return;
+  /**
+   * Preloader → staged hero entrance. The hero timeline is built paused up front so every
+   * element sits in its hidden start state underneath the preloader, then plays once the
+   * preloader has finished and the portrait has loaded.
+   */
+  private setupHeroIntro(): void {
+    const root = this.host.nativeElement as HTMLElement;
+    const hero = root.querySelector('.hero') as HTMLElement | null;
+    const preloader = root.querySelector('.preloader') as HTMLElement | null;
+    if (!hero) return;
 
-    gsap.from(chips, {
-      autoAlpha: 0,
-      scale: 0.85,
-      y: 12,
-      duration: 0.7,
-      ease: 'back.out(1.6)',
-      stagger: 0.18,
-      delay: 0.9
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (preloader) preloader.style.display = 'none';
+      return;
+    }
+
+    const q = gsap.utils.selector(hero);
+
+    const heroTl = gsap.timeline({ paused: true, defaults: { ease: 'expo.out' } });
+    heroTl
+      .from(q('.hero-bg'), { autoAlpha: 0, duration: 1.6, ease: 'power2.out' }, 0)
+      .from(q('.line-greeting .line-inner'), { yPercent: 115, rotate: 3, duration: 1.4 }, 0.18)
+      .from(q('.rc'), {
+        yPercent: 120,
+        rotateX: -80,
+        transformOrigin: '50% 100%',
+        duration: 1.1,
+        stagger: 0.035,
+        clearProps: 'transform'
+      }, 0.3)
+      .from(q('.hero-halo'), { scale: 0.3, duration: 1.8 }, 0.2)
+      .from(q('.hero-arch'), { yPercent: 35, autoAlpha: 0, duration: 1.6 }, 0.25)
+      .fromTo(
+        q('.hero-portrait'),
+        { y: 160, scale: 0.9, autoAlpha: 0, filter: 'blur(16px)' },
+        { y: 0, scale: 1, autoAlpha: 1, filter: 'blur(0px)', duration: 1.7, clearProps: 'filter,transform' },
+        0.4
+      )
+      .fromTo(
+        q('.highlight-mark'),
+        { clipPath: 'inset(0% 100% 0% 0%)' },
+        { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'power3.inOut' },
+        1.0
+      )
+      .from(q('.highlight-spark'), { autoAlpha: 0, duration: 0.5, ease: 'power2.out' }, 1.75)
+      .from(root.querySelector('.site-nav'), { y: -30, autoAlpha: 0, duration: 1.1 }, 0.5)
+      .from(q('.hero-intro > *, .hero-proof > *'), { y: 30, autoAlpha: 0, duration: 1, stagger: 0.08 }, 1.05);
+
+
+    (q('.hero-count') as HTMLElement[]).forEach((el) => {
+      const target = parseInt(el.dataset['count'] ?? '0', 10);
+      const suffix = el.dataset['suffix'] ?? '';
+      const counter = { value: 0 };
+      el.textContent = `0${suffix}`;
+      heroTl.to(counter, {
+        value: target,
+        duration: 1.8,
+        ease: 'power2.out',
+        onUpdate: () => {
+          el.textContent = `${Math.round(counter.value)}${suffix}`;
+        }
+      }, 1.2);
+    });
+
+    const portrait = q('.hero-portrait')[0] as HTMLImageElement | undefined;
+    const imageReady = new Promise<void>((resolve) => {
+      if (!portrait || portrait.complete) {
+        resolve();
+        return;
+      }
+      portrait.addEventListener('load', () => resolve(), { once: true });
+      portrait.addEventListener('error', () => resolve(), { once: true });
+      window.setTimeout(resolve, 4000);
+    });
+
+    let preloaderDone = Promise.resolve();
+    if (preloader) {
+      const pq = gsap.utils.selector(preloader);
+
+      preloaderDone = new Promise<void>((resolve) => {
+        gsap.timeline({ onComplete: resolve })
+          .from(pq('.pl-char'), {
+            yPercent: 115,
+            rotateX: -80,
+            autoAlpha: 0,
+            transformOrigin: '50% 100%',
+            duration: 0.8,
+            ease: 'expo.out',
+            stagger: 0.05
+          })
+          .to(pq('.preloader-bar span'), { scaleX: 1, duration: 2.1, ease: 'power2.inOut' }, 0.1)
+          .from(pq('.preloader-caption'), { y: 10, autoAlpha: 0, duration: 0.6, ease: 'power2.out' }, 0.9)
+          // Highlight: marker strokes sweep in word by word…
+          .to(pq('.pl-mark'), { scaleX: 1, duration: 0.6, ease: 'power3.inOut', stagger: 0.18 }, 1.1)
+          // …then a bright wave rolls across the letters
+          .to(pq('.pl-char'), {
+            keyframes: [
+              { yPercent: -14, filter: 'brightness(1.5) drop-shadow(0 0 12px rgba(255, 150, 100, 0.8))', duration: 0.18 },
+              { yPercent: 0, filter: 'brightness(1) drop-shadow(0 0 0 rgba(255, 150, 100, 0))', duration: 0.3 }
+            ],
+            ease: 'power2.out',
+            stagger: 0.04,
+            clearProps: 'filter'
+          }, 1.5);
+      });
+    }
+
+    Promise.all([imageReady, preloaderDone]).then(() => {
+      this.gsapContext?.add(() => {
+        if (!preloader) {
+          heroTl.play();
+          return;
+        }
+
+        const pq = gsap.utils.selector(preloader);
+        gsap.timeline({ onComplete: () => { preloader.style.display = 'none'; } })
+          .to(pq('.preloader-inner'), { yPercent: -40, autoAlpha: 0, duration: 0.7, ease: 'power3.in' })
+          .to(preloader, { clipPath: 'inset(0% 0% 100% 0%)', duration: 1.1, ease: 'expo.inOut' }, 0.25)
+          .call(() => { heroTl.play(); }, [], 0.8);
+      });
+    });
+  }
+
+  private setupHeroScrollParallax(): void {
+    const hero = this.host.nativeElement.querySelector('.hero') as HTMLElement | null;
+    if (!hero || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const q = gsap.utils.selector(hero);
+    const scrollTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: hero,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 0.8
+      }
+    });
+
+    // Transform the inner wrapper only: .hero-figure must stay free of transforms so its
+    // layers can interleave with the headline (see hero.scss).
+    scrollTl.to(q('.hero-portrait-wrap'), { y: 90, scale: 1.05, transformOrigin: '50% 100%', ease: 'none' }, 0);
+
+    if (window.matchMedia('(min-width: 1080px)').matches) {
+      scrollTl
+        .to(q('.hero-head'), { yPercent: -40, autoAlpha: 0.15, ease: 'none' }, 0)
+        .to(q('.hero-foot'), { y: -40, autoAlpha: 0, ease: 'none' }, 0);
+    }
+  }
+
+  private setupHeroMouseParallax(): void {
+    const hero = this.host.nativeElement.querySelector('.hero') as HTMLElement | null;
+    if (!hero || window.matchMedia('(hover: none)').matches) return;
+
+    const layers = Array.from(hero.querySelectorAll<HTMLElement>('[data-depth]')).map((el) => ({
+      depth: parseFloat(el.dataset['depth'] ?? '0'),
+      x: gsap.quickTo(el, 'x', { duration: 1.1, ease: 'power3.out' }),
+      y: gsap.quickTo(el, 'y', { duration: 1.1, ease: 'power3.out' })
+    }));
+
+    const onMove = (e: MouseEvent) => {
+      const rect = hero.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width - 0.5;
+      const ny = (e.clientY - rect.top) / rect.height - 0.5;
+      layers.forEach((layer) => {
+        layer.x(nx * layer.depth);
+        layer.y(ny * layer.depth);
+      });
+    };
+
+    const onLeave = () => {
+      layers.forEach((layer) => {
+        layer.x(0);
+        layer.y(0);
+      });
+    };
+
+    hero.addEventListener('mousemove', onMove);
+    hero.addEventListener('mouseleave', onLeave);
+
+    this.hoverCleanupFns.push(() => {
+      hero.removeEventListener('mousemove', onMove);
+      hero.removeEventListener('mouseleave', onLeave);
     });
   }
 
   ngOnDestroy(): void {
+    window.clearInterval(this.clockTimer);
     this.hoverCleanupFns.forEach((cleanup) => cleanup());
     this.ribbonTween?.kill();
     this.projectScrollTrigger?.kill();
@@ -441,23 +624,286 @@ export class App implements AfterViewInit, OnDestroy {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  private setupSectionEntranceAnimations(): void {
-    gsap.from('.top-nav-wrap', {
-      y: -18,
+  private prefersReducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /** Masked line reveal for every `.section-title`, with its eyebrow rule drawing in. */
+  private setupSectionTitleAnimations(): void {
+    if (this.prefersReducedMotion()) return;
+
+    const titles = this.host.nativeElement.querySelectorAll('.section-title') as NodeListOf<HTMLElement>;
+    titles.forEach((title) => {
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: title, start: 'top 85%', once: true },
+        defaults: { ease: 'expo.out' }
+      });
+
+      const eyebrow = title.previousElementSibling as HTMLElement | null;
+      if (eyebrow?.classList.contains('section-eyebrow')) {
+        tl.from(eyebrow, { x: -14, autoAlpha: 0, duration: 0.9 }, 0)
+          .from(eyebrow.querySelector('.eyebrow-line'), { scaleX: 0, duration: 1.1 }, 0.1);
+      }
+
+      tl.from(title.querySelectorAll('.title-line'), { yPercent: 115, rotate: 2, duration: 1.3, stagger: 0.12 }, 0.1);
+    });
+  }
+
+  private setupAboutAnimations(): void {
+    const about = this.host.nativeElement.querySelector('.about') as HTMLElement | null;
+    if (!about || this.prefersReducedMotion()) return;
+
+    const q = gsap.utils.selector(about);
+
+    // The image itself floats via CSS, so the entrance animates its wrapper
+    gsap.from(q('.about-visual'), {
+      y: 70,
+      scale: 0.9,
       autoAlpha: 0,
-      duration: 0.75,
-      ease: 'power3.out'
+      duration: 1.5,
+      ease: 'expo.out',
+      scrollTrigger: { trigger: about, start: 'top 75%', once: true }
     });
 
+    // Statement lights up word by word as it scrolls through the viewport
+    const statement = q('.about-statement')[0] as HTMLElement | undefined;
+    if (statement) {
+      this.splitWords(statement);
+      gsap.fromTo(statement.querySelectorAll('.word'), { opacity: 0.15 }, {
+        opacity: 1,
+        stagger: 0.08,
+        ease: 'none',
+        scrollTrigger: { trigger: statement, start: 'top 82%', end: 'bottom 50%', scrub: 0.6 }
+      });
+    }
+
+    const statsTl = gsap.timeline({ scrollTrigger: { trigger: q('.about-stats')[0], start: 'top 85%', once: true } })
+      .from(q('.about-stat, .about-actions'), { y: 36, autoAlpha: 0, duration: 1, ease: 'power3.out', stagger: 0.1 })
+      .from(q('.stat-plus'), { scale: 0, rotate: -90, duration: 0.6, ease: 'back.out(3)', stagger: 0.12 }, 1.3);
+
+    (q('.stat-count') as HTMLElement[]).forEach((el, i) => {
+      const target = parseInt(el.dataset['count'] ?? '0', 10);
+      const counter = { value: 0 };
+      el.textContent = '0';
+      statsTl.to(counter, {
+        value: target,
+        duration: 1.8,
+        ease: 'power3.out',
+        onUpdate: () => {
+          el.textContent = String(Math.round(counter.value));
+        }
+      }, 0.15 + i * 0.1);
+    });
+
+    gsap.from(q('.about-meta-item'), {
+      y: 40,
+      autoAlpha: 0,
+      duration: 1,
+      ease: 'expo.out',
+      stagger: 0.1,
+      scrollTrigger: { trigger: q('.about-meta')[0], start: 'top 88%', once: true }
+    });
+  }
+
+  /** Wraps each word of an element's direct text in `.word` spans; inline children become one word each. */
+  private splitWords(el: HTMLElement): void {
+    const toWords = (text: string) => {
+      const frag = document.createDocumentFragment();
+      text.split(/(\s+)/).forEach((part) => {
+        if (!part) return;
+        if (/^\s+$/.test(part)) {
+          frag.append(' ');
+          return;
+        }
+        const word = document.createElement('span');
+        word.className = 'word';
+        word.textContent = part;
+        frag.append(word);
+      });
+      return frag;
+    };
+
+    Array.from(el.childNodes).forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        node.replaceWith(toWords(node.textContent ?? ''));
+      } else if (node instanceof HTMLElement) {
+        node.classList.add('word');
+      }
+    });
+  }
+
+  private setupServiceAnimations(): void {
+    const services = this.host.nativeElement.querySelector('.services') as HTMLElement | null;
+    if (!services || this.prefersReducedMotion()) return;
+
+    const q = gsap.utils.selector(services);
+    gsap.timeline({ scrollTrigger: { trigger: q('.service-grid')[0], start: 'top 80%', once: true } })
+      .from(q('.services-intro'), { y: 24, autoAlpha: 0, duration: 1, ease: 'power3.out' })
+      .from(q('.service-cell'), {
+        y: 40,
+        autoAlpha: 0,
+        duration: 1,
+        ease: 'expo.out',
+        stagger: { each: 0.08, grid: 'auto', from: 'start' }
+      }, 0.1)
+      .fromTo(q('.service-icon path'), { strokeDashoffset: 1 }, {
+        strokeDashoffset: 0,
+        duration: 1.4,
+        ease: 'power2.inOut',
+        stagger: 0.04,
+        clearProps: 'strokeDashoffset'
+      }, 0.4);
+  }
+
+  /** Soft light that follows the cursor inside each service cell. */
+  private setupServiceSpotlight(): void {
+    if (window.matchMedia('(hover: none)').matches) return;
+
+    const cells = this.host.nativeElement.querySelectorAll('.service-cell') as NodeListOf<HTMLElement>;
+    cells.forEach((cell) => {
+      const move = (e: MouseEvent) => {
+        const rect = cell.getBoundingClientRect();
+        cell.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+        cell.style.setProperty('--my', `${e.clientY - rect.top}px`);
+      };
+      cell.addEventListener('mousemove', move);
+      this.hoverCleanupFns.push(() => cell.removeEventListener('mousemove', move));
+    });
+  }
+
+  private setupExperienceAnimations(): void {
+    const experience = this.host.nativeElement.querySelector('.experience') as HTMLElement | null;
+    if (!experience) return;
+
+    if (this.prefersReducedMotion()) return;
+
+    const items = experience.querySelectorAll('.timeline-item') as NodeListOf<HTMLElement>;
+
+    gsap.from(experience.querySelector('.experience-timeline'), {
+      y: 60,
+      scale: 0.97,
+      autoAlpha: 0,
+      duration: 1.3,
+      ease: 'expo.out',
+      scrollTrigger: { trigger: experience.querySelector('.experience-timeline'), start: 'top 88%', once: true }
+    });
+
+    gsap.from(experience.querySelector('.experience-intro'), {
+      y: 24,
+      autoAlpha: 0,
+      duration: 1,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: experience, start: 'top 75%', once: true }
+    });
+
+    items.forEach((item) => {
+      const iq = gsap.utils.selector(item);
+      gsap.timeline({ scrollTrigger: { trigger: item, start: 'top 85%', once: true }, defaults: { ease: 'expo.out' } })
+        .from(iq('.timeline-when'), { x: -40, autoAlpha: 0, duration: 1.1 })
+        .from(iq('.timeline-node'), { scale: 0, duration: 0.8, ease: 'back.out(2.5)' }, 0.1)
+        .from(iq('.timeline-body > *'), { x: 40, autoAlpha: 0, duration: 1, stagger: 0.07 }, 0.15);
+    });
+  }
+
+  private setupClosingAnimations(): void {
+    if (this.prefersReducedMotion()) return;
+    const root = this.host.nativeElement as HTMLElement;
+
+    const testi = root.querySelector('.recommendations') as HTMLElement | null;
+    if (testi) {
+      const q = gsap.utils.selector(testi);
+      gsap.timeline({ scrollTrigger: { trigger: testi, start: 'top 70%', once: true }, defaults: { ease: 'expo.out' } })
+        .from(q('.testi-rating'), { y: 30, autoAlpha: 0, duration: 1 })
+        .from(q('.testi-mark'), { scale: 0.4, rotate: -20, autoAlpha: 0, duration: 1.2 }, 0.1)
+        .from(q('.testi-people'), { autoAlpha: 0, duration: 0.8 }, 0.3)
+        .from(q('.testi-person'), { y: 30, duration: 0.9, stagger: 0.08 }, 0.3);
+    }
+
+    const contact = root.querySelector('.contact') as HTMLElement | null;
+    if (contact) {
+      const q = gsap.utils.selector(contact);
+      gsap.timeline({ scrollTrigger: { trigger: contact, start: 'top 70%', once: true }, defaults: { ease: 'expo.out' } })
+        .from(q('.contact-lead'), { y: 24, autoAlpha: 0, duration: 1 }, 0.3)
+        .from(q('.contact-line'), { x: -30, autoAlpha: 0, duration: 0.9, stagger: 0.1 }, 0.4)
+        .from(q('.cta-panel'), { y: 60, scale: 0.96, autoAlpha: 0, duration: 1.3 }, 0.3)
+        .from(q('.cta-top, .cta-profile, .cta-pitch, .cta-primary, .cta-secondary'), { y: 20, autoAlpha: 0, duration: 0.9, stagger: 0.08 }, 0.6)
+        .from(q('.site-footer'), { y: 20, autoAlpha: 0, duration: 0.9 }, 0.8);
+
+      // Marquee drifts with scroll on top of its CSS loop
+      gsap.fromTo(q('.contact-marquee'), { xPercent: 4 }, {
+        xPercent: -4,
+        ease: 'none',
+        scrollTrigger: { trigger: contact, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    }
+  }
+
+  private startYangonClock(): void {
+    const tick = () => { this.yangonTime = this.yangonFormat.format(new Date()); };
+
+    this.ngZone.runOutsideAngular(() => {
+      this.clockTimer = window.setInterval(() => this.ngZone.run(tick), 30_000);
+    });
+  }
+
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+    document.documentElement.style.overflow = this.menuOpen ? 'hidden' : '';
+  }
+
+  closeMenu(): void {
+    if (!this.menuOpen) return;
+    this.menuOpen = false;
+    document.documentElement.style.overflow = '';
+  }
+
+  moveNavIndicator(event: MouseEvent): void {
+    this.placeNavIndicator(event.currentTarget as HTMLElement);
+  }
+
+  resetNavIndicator(): void {
+    const active = this.host.nativeElement.querySelector(
+      `.nav-link[data-section="${this.activeSection}"]`
+    ) as HTMLElement | null;
+    this.placeNavIndicator(active);
+  }
+
+  /** Slides the pill behind the nav links to sit under the given link. */
+  private placeNavIndicator(link: HTMLElement | null): void {
+    const indicator = this.host.nativeElement.querySelector('.nav-indicator') as HTMLElement | null;
+    if (!indicator || !link) return;
+
+    gsap.to(indicator, {
+      x: link.offsetLeft,
+      width: link.offsetWidth,
+      autoAlpha: 1,
+      duration: 0.5,
+      ease: 'power3.out'
+    });
+  }
+
+  selectTestimonial(index: number): void {
+    this.activeTestimonial = index;
+  }
+
+  /** Fired when the active person's progress bar completes. */
+  nextTestimonial(): void {
+    this.activeTestimonial = (this.activeTestimonial + 1) % this.testimonials.length;
+  }
+
+  copyEmail(): void {
+    navigator.clipboard?.writeText('mtkhaing.psn17@gmail.com').then(() => {
+      this.emailCopied = true;
+      window.setTimeout(() => this.ngZone.run(() => { this.emailCopied = false; }), 2000);
+    });
+  }
+
+  private setupSectionEntranceAnimations(): void {
+    if (this.prefersReducedMotion()) return;
+
     const groups = [
-      { root: '.hero', targets: '.hero-tag, .hero h1, .hero-meta, .hero-copy, .hero-actions, .hero-stat, .hero-image-frame, .status-card', start: 'top 82%', y: 44 },
       { root: '.skill-ribbon', targets: '.ribbon-item', start: 'top 88%', y: 20 },
-      { root: '.about', targets: '.about-head, .about-photo-wrap, .about-content > *, .about-meta-grid .about-meta-item', start: 'top 70%', y: 54 },
-      { root: '.services', targets: '.services-head, .service-card', start: 'top 72%', y: 42 },
       { root: '.project-showcase', targets: '.showcase-head, .showcase-stack', start: 'top 76%', y: 46 },
-      { root: '.experience', targets: '.experience-head, .experience-card', start: 'top 72%', y: 42 },
-      { root: '.recommendations', targets: '.recommendation-head, .recommendation-feature, .recommendation-card', start: 'top 72%', y: 42 },
-      { root: '.contact', targets: '.contact-head, .contact-email, .contact-chips, .social-row', start: 'top 78%', y: 36 }
     ];
 
     groups.forEach(({ root, targets, start, y }) => {
@@ -697,55 +1143,8 @@ export class App implements AfterViewInit, OnDestroy {
     });
   }
 
-  private setupCounterAnimations(): void {
-    const counters = this.host.nativeElement.querySelectorAll('.stat-count') as NodeListOf<HTMLElement>;
-
-    counters.forEach((el) => {
-      const target = parseInt(el.dataset['count'] ?? '0', 10);
-      const suffix = el.dataset['suffix'] ?? '';
-
-      ScrollTrigger.create({
-        trigger: el,
-        start: 'top 88%',
-        once: true,
-        onEnter: () => {
-          const obj = { value: 0 };
-          gsap.to(obj, {
-            value: target,
-            duration: 1.8,
-            ease: 'power2.out',
-            onUpdate: () => {
-              el.textContent = Math.round(obj.value) + suffix;
-            }
-          });
-        }
-      });
-    });
-  }
-
-  private setupProgressBarAnimations(): void {
-    const cards = this.host.nativeElement.querySelectorAll('.service-card') as NodeListOf<HTMLElement>;
-
-    cards.forEach((card) => {
-      const bar = card.querySelector('.progress-track span') as HTMLElement | null;
-      if (!bar) return;
-
-      const targetWidth = bar.style.width;
-      gsap.set(bar, { width: 0 });
-
-      ScrollTrigger.create({
-        trigger: card,
-        start: 'top 86%',
-        once: true,
-        onEnter: () => {
-          gsap.to(bar, { width: targetWidth, duration: 1.3, ease: 'power3.out', delay: 0.1 });
-        }
-      });
-    });
-  }
-
   private setupMagneticButtons(): void {
-    const btns = this.host.nativeElement.querySelectorAll('.hire-btn') as NodeListOf<HTMLElement>;
+    const btns = this.host.nativeElement.querySelectorAll('.nav-cta') as NodeListOf<HTMLElement>;
 
     btns.forEach((btn) => {
       const move = (e: MouseEvent) => {
@@ -769,27 +1168,6 @@ export class App implements AfterViewInit, OnDestroy {
     });
   }
 
-  private setupAboutCardGlow(): void {
-    if (window.matchMedia('(hover: none)').matches) return;
-
-    const cards = this.host.nativeElement.querySelectorAll(
-      '.about-stat-card, .service-card'
-    ) as NodeListOf<HTMLElement>;
-
-    cards.forEach((card) => {
-      const move = (e: MouseEvent) => {
-        const rect = card.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        card.style.setProperty('--mx', `${x}%`);
-        card.style.setProperty('--my', `${y}%`);
-      };
-
-      card.addEventListener('mousemove', move);
-      this.hoverCleanupFns.push(() => card.removeEventListener('mousemove', move));
-    });
-  }
-
   private setupCursorGlow(): void {
     const glow = document.querySelector('.cursor-glow') as HTMLElement | null;
     if (!glow || window.matchMedia('(hover: none)').matches) return;
@@ -809,10 +1187,19 @@ export class App implements AfterViewInit, OnDestroy {
 
   private setupStickyNav(): void {
     this.ngZone.runOutsideAngular(() => {
+      let lastY = window.scrollY;
       this.navScrollListener = () => {
-        const scrolled = window.scrollY > 80;
-        if (scrolled !== this.isScrolled) {
-          this.ngZone.run(() => { this.isScrolled = scrolled; });
+        const y = window.scrollY;
+        const scrolled = y > 80;
+        const hidden = y > 480 && y > lastY;
+        if (Math.abs(y - lastY) < 6 && scrolled === this.isScrolled) return;
+        lastY = y;
+
+        if (scrolled !== this.isScrolled || hidden !== this.navHidden) {
+          this.ngZone.run(() => {
+            this.isScrolled = scrolled;
+            this.navHidden = hidden;
+          });
         }
       };
       window.addEventListener('scroll', this.navScrollListener, { passive: true });
@@ -827,6 +1214,7 @@ export class App implements AfterViewInit, OnDestroy {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             this.ngZone.run(() => { this.activeSection = entry.target.id; });
+            this.resetNavIndicator();
           }
         });
       },
@@ -837,5 +1225,8 @@ export class App implements AfterViewInit, OnDestroy {
       const el = document.getElementById(id);
       if (el) this.sectionObserver!.observe(el);
     });
+
+    // Initial placement once fonts have given the links their final widths
+    document.fonts?.ready.then(() => this.resetNavIndicator());
   }
 }

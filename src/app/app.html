@@ -1,87 +1,198 @@
+<div class="preloader" aria-hidden="true">
+  <div class="preloader-inner">
+    <div class="preloader-brand">
+      @for (word of preloaderWords; track word) {
+        <span class="pl-word" [class.pl-word-accent]="$first">
+          <span class="pl-mark" aria-hidden="true"></span>
+          @for (ch of word.split(''); track $index) {
+            <span class="pl-char">{{ ch }}</span>
+          }
+        </span>
+      }
+    </div>
+    <div class="preloader-bar"><span></span></div>
+    <p class="preloader-caption">UI / UX Designer · Portfolio</p>
+  </div>
+</div>
 <div class="scroll-progress"></div>
 <div class="cursor-glow"></div>
 <main class="portfolio-page">
-  <header class="top-nav-wrap reveal" [class.scrolled]="isScrolled">
-    <nav class="top-nav">
-      <a class="brand" href="#home">May<span>.</span></a>
-      <a href="#home" [class.active]="activeSection === 'home'">Home</a>
-      <a href="#about" [class.active]="activeSection === 'about'">About</a>
-      <a href="#projects" [class.active]="activeSection === 'projects'">Work</a>
-      <a href="#experience" [class.active]="activeSection === 'experience'">Experience</a>
-      <a href="#recommendations" [class.active]="activeSection === 'recommendations'">Recommendation</a>
-      <a href="#contact" [class.active]="activeSection === 'contact'">Contact</a>
-      <a class="hire-btn" href="#contact">Hire me ↗</a>
+  <header class="site-nav" [class.is-scrolled]="isScrolled" [class.is-hidden]="navHidden && !menuOpen">
+    <nav class="nav-bar" aria-label="Primary">
+      <a class="nav-brand" href="#home" (click)="closeMenu()">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span class="brand-name">May<span>.</span></span>
+      </a>
+
+      <div class="nav-links" (mouseleave)="resetNavIndicator()">
+        <span class="nav-indicator" aria-hidden="true"></span>
+        @for (link of navLinks; track link.id) {
+          <a
+            class="nav-link"
+            [href]="'#' + link.id"
+            [attr.data-section]="link.id"
+            [class.active]="activeSection === link.id"
+            [attr.aria-current]="activeSection === link.id ? 'page' : null"
+            (mouseenter)="moveNavIndicator($event)"
+          >{{ link.label }}</a>
+        }
+      </div>
+
+      <a class="nav-cta" href="#contact" (click)="closeMenu()">
+        <span>Hire me</span>
+        <span class="nav-cta-icon" aria-hidden="true">↗</span>
+      </a>
+
+      <button
+        class="nav-toggle"
+        type="button"
+        [class.is-open]="menuOpen"
+        [attr.aria-expanded]="menuOpen"
+        aria-controls="mobile-menu"
+        aria-label="Toggle menu"
+        (click)="toggleMenu()"
+      >
+        <span></span><span></span>
+      </button>
     </nav>
   </header>
 
-  <section class="hero reveal" id="home">
-    <div class="hero-grid" aria-hidden="true"></div>
-    <div class="hero-blob hero-blob-orange" aria-hidden="true"></div>
-    <div class="hero-blob hero-blob-blue" aria-hidden="true"></div>
-
-    <div class="hero-content">
-      <p class="hero-tag">
-        <span class="tag-dot" aria-hidden="true"></span>
-        Available for new projects · 2026
-      </p>
-      <h1>
-        I'm <span class="accent hero-name">May</span><br />
-        <span class="hero-lastname">Thin Khaing</span>
-      </h1>
-      <p class="hero-meta">
-        <span class="line"></span>
-        UI / UX DESIGNER · YANGON
-      </p>
-      <p class="hero-copy">
-        I design calm, considered digital products that help teams move faster and users
-        feel at home. Two years of crafting interfaces, design systems and end-to-end experiences.
-      </p>
-      <div class="hero-actions">
-        <a class="cta-btn" href="#projects">
-          <span class="cta-shine" aria-hidden="true"></span>
-          <span class="cta-label">View my work</span>
-          <span class="cta-arrow" aria-hidden="true">→</span>
+  <div class="mobile-menu" id="mobile-menu" [class.open]="menuOpen" [attr.aria-hidden]="!menuOpen">
+    <nav class="mobile-links" aria-label="Mobile">
+      @for (link of navLinks; track link.id; let i = $index) {
+        <a
+          [href]="'#' + link.id"
+          [class.active]="activeSection === link.id"
+          [style.transition-delay.ms]="menuOpen ? 80 + i * 60 : 0"
+          [attr.tabindex]="menuOpen ? null : -1"
+          (click)="closeMenu()"
+        >
+          <span class="mobile-index">{{ (i + 1).toString().padStart(2, '0') }}</span>
+          {{ link.label }}
         </a>
-        <a class="ghost-btn" href="#contact">Let's talk</a>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <h3 class="stat-count" data-count="2" data-suffix="+">2+</h3>
-          <p>Years experience</p>
+      }
+    </nav>
+    <div class="mobile-foot">
+      <a href="mailto:mtkhaing.psn17@gmail.com" [attr.tabindex]="menuOpen ? null : -1">mtkhaing.psn17&#64;gmail.com</a>
+      <span>Yangon, Myanmar</span>
+    </div>
+  </div>
+
+  <section class="hero" id="home">
+    <div class="hero-bg" aria-hidden="true">
+      <div class="hero-grid"></div>
+      <div class="hero-beam"></div>
+      <div class="hero-glow hero-glow-left"></div>
+      <div class="hero-glow hero-glow-right"></div>
+      <span class="hero-spark" style="left: 14%; top: 72%; animation-delay: -1s;"></span>
+      <span class="hero-spark" style="left: 24%; top: 58%; animation-delay: -4s; animation-duration: 11s;"></span>
+      <span class="hero-spark" style="left: 33%; top: 86%; animation-delay: -7s;"></span>
+      <span class="hero-spark" style="left: 44%; top: 64%; animation-delay: -2.5s; animation-duration: 12s;"></span>
+      <span class="hero-spark" style="left: 58%; top: 80%; animation-delay: -5.5s;"></span>
+      <span class="hero-spark" style="left: 67%; top: 60%; animation-delay: -8s; animation-duration: 10s;"></span>
+      <span class="hero-spark" style="left: 78%; top: 76%; animation-delay: -3s;"></span>
+      <span class="hero-spark" style="left: 88%; top: 66%; animation-delay: -6.5s; animation-duration: 13s;"></span>
+    </div>
+
+    <div class="hero-head">
+      <h1 class="hero-title" data-depth="-14" aria-label="Hello, I'm May — UI/UX Designer">
+        <span class="line-mask line-greeting">
+          <span class="line-inner">Hello,
+            <span class="hero-highlight"><span class="highlight-mark" aria-hidden="true"></span><span class="hero-im">I'm</span>&nbsp;<span class="hero-name">May</span><span class="highlight-spark" aria-hidden="true">✦</span></span>
+          </span>
+        </span>
+        <span class="line-mask line-role">
+          <span class="line-inner hero-role" aria-hidden="true">
+            @for (word of roleWords; track $index; let last = $last) {
+              <span class="role-word">
+                @for (c of word; track c.i) {
+                  <span class="rc" [attr.data-c]="c.ch" [style.--i]="c.i"><span class="rc-face">{{ c.ch }}</span></span>
+                }
+              </span>
+              @if (!last) {
+                {{ ' ' }}
+              }
+            }
+          </span>
+        </span>
+      </h1>
+    </div>
+
+    <div class="hero-figure">
+      <div class="hero-stage">
+        <div class="hero-layer hero-layer-back" data-depth="18" aria-hidden="true">
+          <div class="hero-halo"></div>
+          <div class="hero-arch"><span class="arch-grid"></span></div>
         </div>
-        <div class="hero-stat">
-          <h3 class="stat-count" data-count="110" data-suffix="+">110+</h3>
-          <p>Projects shipped</p>
-        </div>
-        <div class="hero-stat">
-          <h3 class="stat-count" data-count="40" data-suffix="+">40+</h3>
-          <p>Happy clients</p>
+        <div class="hero-layer hero-layer-portrait">
+          <div class="hero-portrait-wrap">
+            <img
+              class="hero-portrait"
+              src="images/m5-hero.png"
+              alt="May Thin Khaing, UI/UX designer"
+              width="800"
+              height="1050"
+              fetchpriority="high"
+            />
+          </div>
         </div>
       </div>
     </div>
-    <div class="hero-image-wrap">
-      <div class="hero-image-frame">
-        <span class="hero-ring" aria-hidden="true"></span>
-        <img
-          class="hero-image"
-          src="images/banner.png"
-          alt="Banner"
-        />
-        <span class="hero-chip hero-chip-1" aria-hidden="true">
-          <span class="chip-dot"></span> Figma · Sketch
-        </span>
-        <span class="hero-chip hero-chip-2" aria-hidden="true">
-          ✦ UI Systems
-        </span>
-      </div>
-      <div class="status-card">
-        <div>
-          <h4>Open to work</h4>
-          <p>Replies within 24h</p>
+
+    <div class="hero-foot">
+      <div class="hero-intro">
+        <p class="hero-meta"><span class="line"></span><strong>May Thin Khaing</strong> · Yangon</p>
+        <p class="hero-copy">
+          I design calm, considered digital products that help teams move faster and users feel at home.
+        </p>
+        <div class="hero-actions">
+          <a class="cta-btn" href="#projects">
+            <span class="cta-shine" aria-hidden="true"></span>
+            <span class="cta-label">View my work</span>
+            <span class="cta-arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="ghost-btn" href="#contact">Let's talk</a>
         </div>
-        <span>✦</span>
       </div>
-      <div class="hero-glow"></div>
+
+      <div class="hero-proof">
+        <div class="proof-clients">
+          <div class="avatar-stack">
+            @for (person of testimonials.slice(0, 3); track person.name) {
+              <span class="avatar-initials" [style.background]="person.accent">{{ person.initials }}</span>
+            }
+            <span class="avatar-more">+</span>
+          </div>
+          <div class="proof-label">
+            <strong><span class="hero-count" data-count="40">40</span><span class="proof-plus">+</span></strong>
+            <span class="proof-stars" aria-label="Rated 5 out of 5">★★★★★</span>
+          </div>
+        </div>
+        <p class="proof-caption">Happy clients across web &amp; mobile</p>
+        <div class="proof-stats">
+          <div class="proof-stat">
+            <span class="proof-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" />
+                <path d="M12 7.5V12l3 2" />
+              </svg>
+            </span>
+            <strong><span class="hero-count" data-count="2">2</span><span class="proof-plus">+</span></strong>
+            <span class="proof-name">Years experience</span>
+          </div>
+          <div class="proof-stat">
+            <span class="proof-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l9 5-9 5-9-5 9-5z" />
+                <path d="M3 12.5l9 5 9-5" />
+                <path d="M3 17l9 5 9-5" />
+              </svg>
+            </span>
+            <strong><span class="hero-count" data-count="50">50</span><span class="proof-plus">+</span></strong>
+            <span class="proof-name">Projects shipped</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -102,117 +213,99 @@
     </div>
   </section>
 
-  <section class="about reveal" id="about">
-    <div class="about-head">
-      <p class="section-pill"><span class="pill-dot"></span> About me</p>
-      <h2>Designing with <span class="accent hero-name">intention.</span></h2>
-    </div>
-    <div class="about-layout">
-      <div class="about-photo-wrap">
-        <div class="about-photo-frame">
-          <img
-            src="images/me.png"
-            alt="About me photo"
-            class="about-photo"
-          />
-        </div>
+  <section class="about" id="about">
+    <div class="about-grid">
+      <div class="about-visual">
+        <span class="about-glow" aria-hidden="true"></span>
+        <img
+          class="about-img"
+          src="images/m6.png"
+          alt="May working on a laptop, surrounded by the design tools she uses"
+          width="1087"
+          height="1446"
+          loading="lazy"
+        />
       </div>
-      <div class="about-content">
-        <p class="about-intro">
-          <span class="intro-bar" aria-hidden="true"></span>
-          I'm a multidisciplinary designer focused on the <span class="accent">quiet details</span>
-          that make a product feel thoughtful - typography, motion, and the spaces between.
+
+      <div class="about-body">
+        <p class="section-eyebrow"><span class="eyebrow-index">01</span><span class="eyebrow-line"></span>About me</p>
+        <h2 class="section-title">
+          <span class="title-mask"><span class="title-line">Designing with</span></span>
+          <span class="title-mask"><span class="title-line"><em class="title-accent">intention.</em></span></span>
+        </h2>
+        <p class="about-statement">
+          I design calm, thoughtful products — obsessing over the <em class="statement-accent">quiet details</em>
+          of typography, motion and space.
         </p>
-        <p class="about-copy">
-          Over the last two years I've partnered with startups and growing teams to ship products
-          people genuinely enjoy. My practice blends research, systems thinking, and a deep respect for craft.
-        </p>
-        <div class="about-stat-grid">
+
+        <dl class="about-stats">
           @for (stat of aboutStats; track stat.label) {
-            <article class="about-stat-card">
-              <span class="stat-glow" aria-hidden="true"></span>
-              <div class="about-stat-top">
-                <h3 class="stat-count" [attr.data-count]="stat.value">{{ stat.value }}</h3>
-                <span> {{ stat.suffix }} </span>
-              </div>
-              <p class="dot-label">{{ stat.label }}</p>
-              <p>{{ stat.note }}</p>
-            </article>
+            <div class="about-stat">
+              <dd><span class="stat-count" [attr.data-count]="stat.value">{{ stat.value }}</span><span class="stat-plus">+</span></dd>
+              <dt>{{ stat.label }}</dt>
+            </div>
           }
+        </dl>
+
+        <div class="about-actions">
+          <a class="about-link" href="#contact">
+            <span>Let's work together</span>
+            <span class="about-link-arrow" aria-hidden="true">↗</span>
+          </a>
         </div>
       </div>
     </div>
-    <div class="about-meta-grid">
+
+    <dl class="about-meta">
       @for (item of aboutMeta; track item.label; let i = $index) {
-        <div class="about-meta-item" [attr.data-index]="i + 1">
+        <div class="about-meta-item" [style.--meta-accent]="item.accent">
           <span class="meta-icon" aria-hidden="true">
-            @switch (item.label) {
-              @case ('Based in') {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 21s-7-7.1-7-12a7 7 0 1 1 14 0c0 4.9-7 12-7 12z"/>
-                  <circle cx="12" cy="9" r="2.6"/>
-                </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              @for (d of item.paths; track d) {
+                <path [attr.d]="d" />
               }
-              @case ('Languages') {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="9"/>
-                  <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>
-                </svg>
-              }
-              @case ('Currently') {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="7" width="18" height="13" rx="2"/>
-                  <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                  <path d="M3 13h18"/>
-                </svg>
-              }
-              @case ('Focus') {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="9"/>
-                  <circle cx="12" cy="12" r="5"/>
-                  <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-                </svg>
-              }
-            }
+            </svg>
           </span>
-          <span class="meta-index">{{ '0' + (i + 1) }}</span>
-          <p>{{ item.label }}</p>
-          <h4>{{ item.value }}</h4>
+          <span class="meta-index" aria-hidden="true">{{ (i + 1).toString().padStart(2, '0') }}</span>
+          <dt>{{ item.label }}</dt>
+          <dd>{{ item.value }}</dd>
           <span class="meta-underline" aria-hidden="true"></span>
         </div>
       }
-    </div>
+    </dl>
   </section>
 
-  <section class="services reveal" id="services">
+  <section class="services" id="services">
     <div class="services-head">
       <div>
-        <p class="section-pill"><span class="pill-dot"></span> Skills · 02</p>
-        <h2>What I do <span class="accent hero-name">best.</span></h2>
+        <p class="section-eyebrow"><span class="eyebrow-index">02</span><span class="eyebrow-line"></span>Expertise</p>
+        <h2 class="section-title">
+          <span class="title-mask"><span class="title-line">What I do <em class="title-accent">best.</em></span></span>
+        </h2>
       </div>
-      <p class="services-meta"><span class="meta-dot"></span> 6 core disciplines</p>
+      <p class="services-intro">
+        Six disciplines I bring to every product — from the first sketch to the shipped interface.
+      </p>
     </div>
+
     <div class="service-grid">
       @for (service of services; track service.title; let i = $index) {
-        <article class="service-card" [attr.data-index]="i">
-          <span class="card-glow" aria-hidden="true"></span>
-          <div class="service-top">
-            <span class="service-icon">
-              <span class="icon-bg" aria-hidden="true"></span>
-              <span class="icon-emoji">{{ service.icon }}</span>
+        <article class="service-cell">
+          <span class="cell-spotlight" aria-hidden="true"></span>
+          <div class="cell-top">
+            <span class="service-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                @for (d of service.paths; track d) {
+                  <path [attr.d]="d" pathLength="1" />
+                }
+              </svg>
             </span>
-            <h3>{{ service.title }}</h3>
-            <p class="service-percent">{{ service.progress }}%</p>
+            <span class="cell-index">{{ (i + 1).toString().padStart(2, '0') }}</span>
+            <span class="cell-arrow" aria-hidden="true">↗</span>
           </div>
-          <div class="progress-track">
-            <span class="progress-fill" [style.width.%]="service.progress">
-              <span class="progress-thumb" aria-hidden="true"></span>
-            </span>
-          </div>
-          <div class="service-foot">
-            <p class="proficiency-label">Proficiency</p>
-            <span class="service-arrow" aria-hidden="true">→</span>
-          </div>
+          <h3 class="cell-title">{{ service.title }}</h3>
+          <p class="cell-desc">{{ service.description }}</p>
+          <p class="cell-tags">{{ service.tags.join(' · ') }}</p>
         </article>
       }
     </div>
@@ -417,130 +510,183 @@
     </div>
   </section>
 
-  <section class="experience reveal" id="experience">
+  <section class="experience" id="experience">
     <div class="experience-head">
-      <p class="experience-pill"><span class="pill-dot"></span> EXPERIENCE · 04</p>
-      <h2>A timeline of <span class="accent hero-name">craft.</span></h2>
-      <p>two years across studios, startups and product teams.</p>
+      <div>
+        <p class="section-eyebrow"><span class="eyebrow-index">03</span><span class="eyebrow-line"></span>Experience</p>
+        <h2 class="section-title">
+          <span class="title-mask"><span class="title-line">A timeline of <em class="title-accent">craft.</em></span></span>
+        </h2>
+      </div>
+      <p class="experience-intro">Two years across studios, startups and product teams.</p>
     </div>
 
     <div class="experience-timeline">
-      <span class="timeline-progress" aria-hidden="true"></span>
-      @for (item of timeline; track item.period; let i = $index) {
-        <article
-          class="experience-card"
-          [class.align-right]="i % 2 === 1"
-          [style.--experience-accent]="item.accent"
-        >
-          <span class="timeline-dot">
-            <span class="timeline-dot-inner" aria-hidden="true"></span>
-          </span>
-          <span class="timeline-arm" aria-hidden="true"></span>
-          <div class="experience-card-inner">
-            <span class="card-corner" aria-hidden="true"></span>
-            <div class="experience-meta">
-              @if (i === 0) {
-                <span class="current-badge"><span class="current-dot"></span> Current</span>
-              }
-              <span>{{ item.period }}</span>
-              <em>{{ item.index }}</em>
+      <span class="timeline-rail" aria-hidden="true"><span class="timeline-progress"></span></span>
+      <ol class="timeline-list">
+        @for (item of timeline; track item.period; let i = $index) {
+          <li class="timeline-item" [class.is-current]="i === 0" [style.--item-accent]="item.accent">
+            <div class="timeline-when">
+              <span class="when-start">{{ item.start }}</span>
+              <span class="when-end">— {{ item.end }}</span>
             </div>
-            <div class="experience-role">
-              <span>{{ item.initial }}</span>
-              <div>
+            <span class="timeline-node" aria-hidden="true"></span>
+            <div class="timeline-body">
+              <div class="timeline-role">
                 <h3>{{ item.title }}</h3>
-                <p>{{ item.company }}</p>
+                @if (i === 0) {
+                  <span class="current-badge"><span class="live-dot"></span>Current</span>
+                }
               </div>
+              <p class="timeline-company">{{ item.company }}</p>
+              <p class="timeline-desc">{{ item.description }}</p>
+              <ul class="timeline-tags">
+                @for (tag of item.tags; track tag) {
+                  <li>{{ tag }}</li>
+                }
+              </ul>
             </div>
-            <p class="experience-copy">{{ item.description }}</p>
-            <div class="experience-tags">
-              @for (tag of item.tags; track tag) {
-                <span>{{ tag }}</span>
-              }
-            </div>
-          </div>
-        </article>
-      }
+          </li>
+        }
+      </ol>
     </div>
   </section>
 
-  <section class="recommendations reveal" id="recommendations">
-    <div class="recommendation-head">
-      <p class="recommendation-pill">+ RECOMMENDATIONS - 05</p>
-      <h2>Kind words from <span class="accent hero-name">people</span> I've worked with.</h2>
-      <p>A few notes from founders, product leads and teammates I've had the privilege to design alongside.</p>
+  <section class="recommendations" id="recommendations">
+    <div class="testi-head">
+      <div>
+        <p class="section-eyebrow"><span class="eyebrow-index">04</span><span class="eyebrow-line"></span>Testimonials</p>
+        <h2 class="section-title">
+          <span class="title-mask"><span class="title-line">Kind words from</span></span>
+          <span class="title-mask"><span class="title-line"><em class="title-accent">people</em> I've worked with.</span></span>
+        </h2>
+      </div>
+      <div class="testi-rating">
+        <div class="rating-top">
+          <strong>5.0</strong>
+          <span class="rating-stars" aria-label="5 out of 5 stars">★★★★★</span>
+        </div>
+        <p>Average rating from teammates and clients</p>
+        <dl class="rating-stats">
+          @for (stat of recommendationStats.slice(1); track stat.label) {
+            <div>
+              <dt>{{ stat.label }}</dt>
+              <dd>{{ stat.value }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
     </div>
 
-    <article class="recommendation-feature">
-      <div class="feature-quote">
-        <span class="quote-mark">99</span>
-        <p>"May doesn't just design interfaces - she designs <span class="accent">conviction.</span> Every flow, every motion, every pixel feels considered. She's the rare designer who makes the whole team raise their game."</p>
-        <div class="person-row">
-          <img src="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=120&q=80" alt="Hnin Cherry portrait" />
-          <div>
-            <h3>Hnin Cherry</h3>
-            <p>Senior UI/UX Designer</p>
+    <div class="testi-stage">
+      <span class="testi-glow" aria-hidden="true"></span>
+      <span class="testi-mark" aria-hidden="true">“</span>
+      @for (item of [testimonials[activeTestimonial]]; track activeTestimonial) {
+        <blockquote class="testi-quote" [style.--accent]="item.accent">
+          <p>
+            @for (word of item.words; track $index) {
+              <span class="tw" [style.animation-delay.ms]="$index * 22">{{ word }}</span>{{ ' ' }}
+            }
+          </p>
+        </blockquote>
+      }
+
+      <div class="testi-people" role="tablist" aria-label="Choose a testimonial">
+        @for (item of testimonials; track item.name; let i = $index) {
+          <button
+            type="button"
+            class="testi-person"
+            role="tab"
+            [class.is-active]="i === activeTestimonial"
+            [attr.aria-selected]="i === activeTestimonial"
+            [style.--accent]="item.accent"
+            (click)="selectTestimonial(i)"
+          >
+            <span class="person-avatar" aria-hidden="true">{{ item.initials }}</span>
+            <span class="person-text">
+              <strong>{{ item.name }}</strong>
+              <small>{{ item.role }}</small>
+            </span>
+            <span class="person-progress" aria-hidden="true" (animationend)="nextTestimonial()"></span>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="contact-marquee" aria-hidden="true">
+      <div class="marquee-track">
+        @for (n of [0, 1]; track n) {
+          <span>Let's work together <em>✦</em> Let's work together <em>✦</em> Let's work together <em>✦</em>&nbsp;</span>
+        }
+      </div>
+    </div>
+
+    <div class="contact-body">
+      <div class="contact-copy">
+        <p class="section-eyebrow"><span class="eyebrow-index">05</span><span class="eyebrow-line"></span>Contact</p>
+        <h2 class="section-title contact-title">
+          <span class="title-mask"><span class="title-line">Have a project</span></span>
+          <span class="title-mask"><span class="title-line"><em class="title-accent">in mind?</em></span></span>
+        </h2>
+        <p class="contact-lead">
+          I'm taking on a few new projects for 2026. Tell me what you're building — I usually reply within 24 hours.
+        </p>
+
+        <div class="contact-lines">
+          <div class="contact-line">
+            <span class="line-label">Email</span>
+            <a class="line-value" href="mailto:mtkhaing.psn17@gmail.com">mtkhaing.psn17&#64;gmail.com</a>
+            <button type="button" class="line-copy" (click)="copyEmail()">{{ emailCopied ? 'Copied ✓' : 'Copy' }}</button>
+          </div>
+          <div class="contact-line">
+            <span class="line-label">Phone</span>
+            <a class="line-value" href="tel:+959770502150">+95 9 770 502 150</a>
+          </div>
+          <div class="contact-line">
+            <span class="line-label">Based in</span>
+            <span class="line-value">Yangon, Myanmar</span>
           </div>
         </div>
       </div>
-      <div class="rating-panel">
-        @for (stat of recommendationStats; track stat.label) {
-          <div>
-            <strong>{{ stat.value }}</strong>
-            <span>{{ stat.label }}</span>
-          </div>
-        }
-      </div>
-    </article>
 
-    <div class="recommendation-grid">
-      @for (item of recommendations; track item.name) {
-        <article class="recommendation-card" [style.--recommendation-accent]="item.accent">
-          <div class="recommendation-card-top">
-            <span>99</span>
-            <strong aria-label="5 star rating">*****</strong>
+      <div class="contact-cta">
+        <div class="cta-panel">
+          <span class="cta-border" aria-hidden="true"></span>
+          <div class="cta-top">
+            <span class="cta-status"><span class="live-dot"></span>Available for new projects</span>
+            <span class="cta-time">Yangon · {{ yangonTime }}</span>
           </div>
-          <p>"{{ item.quote }}"</p>
-          <div class="person-row">
-            <img [src]="item.avatar" [alt]="item.name + ' portrait'" />
+          <div class="cta-profile">
+            <img class="cta-avatar" src="images/avatar.png" alt="May Thin Khaing" width="240" height="240" loading="lazy" />
             <div>
-              <h3>{{ item.name }}</h3>
-              <p>{{ item.role }}</p>
+              <strong>May Thin Khaing</strong>
+              <span>UI/UX Designer · Replies within 24h</span>
             </div>
           </div>
-        </article>
-      }
+          <p class="cta-pitch">Got an idea, a product or a redesign in mind? Let's make it simple, useful and beautiful.</p>
+          <a class="cta-primary" href="mailto:mtkhaing.psn17@gmail.com?subject=New%20project">
+            <span class="cta-primary-shine" aria-hidden="true"></span>
+            <span class="cta-primary-label">Start a project</span>
+            <span class="cta-primary-icon" aria-hidden="true">↗</span>
+          </a>
+          <a class="cta-secondary" href="#projects">See my work first →</a>
+        </div>
+      </div>
     </div>
+
+    <footer class="site-footer">
+      <span class="footer-brand">May<span>.</span></span>
+      <p>© {{ currentYear }} May Thin Khaing · Designed &amp; built with care in Yangon.</p>
+      <div class="footer-social">
+        <a href="#" aria-label="LinkedIn">LinkedIn</a>
+        <a href="#" aria-label="GitHub">GitHub</a>
+      </div>
+    </footer>
   </section>
 
-  <section class="contact reveal" id="contact">
-    <div class="contact-grid" aria-hidden="true"></div>
-    <div class="contact-blob contact-blob-orange" aria-hidden="true"></div>
-    <div class="contact-blob contact-blob-blue" aria-hidden="true"></div>
-
-    <div class="contact-head">
-      <p class="contact-pill"><span class="pill-dot"></span> LET'S COLLABORATE</p>
-      <h2>Have a project <span class="accent hero-name">in mind?</span></h2>
-      <p>I'm currently taking on a few select projects for 2026. If you're building something that deserves great design, I'd love to hear about it.</p>
-    </div>
-    <a class="contact-email" href="mailto:mtkhaing.psn17@gmail.com">
-      <span class="email-shine" aria-hidden="true"></span>
-      <span class="email-icon" aria-hidden="true">✉</span>
-      <span class="email-text">mtkhaing.psn17@gmail.com</span>
-      <span class="email-arrow" aria-hidden="true">↗</span>
-    </a>
-    <div class="contact-chips">
-      <span><span class="chip-icon">📍</span> Yangon, Myanmar</span>
-      <span><span class="chip-icon">📞</span> +95 9 770 502 150</span>
-      <span><span class="chip-icon">⚡</span> Reply within 24h</span>
-    </div>
-    <div class="social-row" aria-label="Social links">
-      <a href="#" aria-label="LinkedIn"><span>in</span></a>
-      <a href="#" aria-label="GitHub"><span>git</span></a>
-    </div>
-  </section>
-
-  <button class="back-to-top" type="button" (click)="scrollToTop()" aria-label="Scroll to top">
+  <button class="back-to-top" type="button" [class.visible]="isScrolled" (click)="scrollToTop()" aria-label="Scroll to top">
     &uarr;
   </button>
 </main>
