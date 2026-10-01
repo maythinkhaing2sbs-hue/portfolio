@@ -1323,6 +1323,79 @@ p {
   box-shadow: 0 0 8px rgba(255, 87, 34, 0.65);
 }
 
+/*
+ * ── Custom cursor: an arrow whose gradient keeps flowing ──
+ * Positioned straight from mousemove (no easing) so it tracks like the native pointer.
+ */
+.cursor-arrow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10001;
+  /* the arrow's tip sits at (5, 3) inside its 32px box */
+  margin: -3px 0 0 -5px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  will-change: transform;
+}
+
+.cursor-arrow.is-visible {
+  opacity: 1;
+}
+
+.cursor-arrow svg {
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px rgba(255, 87, 34, 0.55));
+  transform-origin: 5px 3px;
+  transition: scale 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), rotate 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: cursor-glow-shift 4s linear infinite;
+}
+
+@keyframes cursor-glow-shift {
+  0%, 100% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px rgba(255, 138, 87, 0.6)); }
+  40%      { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px rgba(255, 77, 157, 0.6)); }
+  70%      { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px rgba(124, 140, 255, 0.6)); }
+}
+
+/* A ring that ripples out from the tip while over something clickable */
+.cursor-pulse {
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 138, 87, 0.9);
+  opacity: 0;
+}
+
+.cursor-arrow.is-hover svg {
+  scale: 1.3;
+  rotate: -8deg;
+}
+
+.cursor-arrow.is-hover .cursor-pulse {
+  animation: cursor-pulse 1.1s ease-out infinite;
+}
+
+.cursor-arrow.is-down svg {
+  scale: 0.85;
+}
+
+@keyframes cursor-pulse {
+  from { opacity: 0.9; scale: 0.3; }
+  to   { opacity: 0; scale: 1.5; }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .cursor-arrow {
+    display: none;
+  }
+}
+
 /* ── Cursor ambient glow ── */
 .cursor-glow {
   position: fixed;

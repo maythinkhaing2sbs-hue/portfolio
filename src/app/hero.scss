@@ -6,10 +6,111 @@
   display: grid;
   place-items: center;
   grid-template-columns: minmax(0, 1fr);
-  background:
-    radial-gradient(ellipse 55% 45% at 50% 55%, rgba(255, 87, 34, 0.14), transparent 70%),
-    #10141c;
-  clip-path: inset(0% 0% 0% 0%);
+  overflow: hidden;
+  background: #0b0d13;
+  will-change: opacity;
+}
+
+/* Slow-drifting colour fields behind the splash */
+.splash-aurora {
+  position: absolute;
+  inset: 0;
+}
+
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.aurora-a {
+  width: 62vmax;
+  height: 62vmax;
+  left: -18vmax;
+  bottom: -30vmax;
+  background: radial-gradient(circle, rgba(255, 87, 34, 0.5), rgba(255, 87, 34, 0.18) 38%, transparent 70%);
+  animation: aurora-a 9s ease-in-out infinite alternate;
+}
+
+.aurora-b {
+  width: 52vmax;
+  height: 52vmax;
+  right: -16vmax;
+  top: -24vmax;
+  background: radial-gradient(circle, rgba(74, 163, 255, 0.34), rgba(74, 163, 255, 0.12) 38%, transparent 70%);
+  animation: aurora-b 11s ease-in-out infinite alternate;
+}
+
+.aurora-c {
+  width: 40vmax;
+  height: 40vmax;
+  left: 38%;
+  top: 30%;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.26), rgba(167, 139, 250, 0.09) 38%, transparent 70%);
+  animation: aurora-c 8s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-a {
+  to { transform: translate3d(22vmax, -14vmax, 0) scale(1.2); }
+}
+
+@keyframes aurora-b {
+  to { transform: translate3d(-20vmax, 16vmax, 0) scale(1.15); }
+}
+
+@keyframes aurora-c {
+  to { transform: translate3d(-16vmax, -8vmax, 0) scale(0.8); }
+}
+
+/* Fine film grain so the gradients don't band */
+.splash-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.splash-greetings {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.splash-hello {
+  grid-area: 1 / 1;
+  padding: 0 1rem;
+  font-family: 'Playfair Display', Georgia, 'Myanmar Text', 'Noto Sans Myanmar', serif;
+  font-size: clamp(2.8rem, 9vw, 6.5rem);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #fff;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Second greeting speaks in the site's display face */
+.splash-hello-alt {
+  font-family: 'Unbounded Variable', 'Bricolage Grotesque Variable', sans-serif;
+  font-size: clamp(2rem, 6.4vw, 4.6rem);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(100deg, #ffb86b, #ff5722 55%, #a855f7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.preloader-inner {
+  position: relative;
+}
+
+.preloader-brand {
+  will-change: transform;
 }
 
 .preloader-inner {
@@ -23,11 +124,11 @@
   justify-content: center;
   gap: 0 0.28em;
   padding: 0 1rem;
-  font-family: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Inter Variable', sans-serif;
-  font-size: clamp(2.4rem, 8vw, 6rem);
+  font-family: 'Unbounded Variable', 'Bricolage Grotesque Variable', 'Inter Variable', sans-serif;
+  font-size: clamp(1.7rem, 6.2vw, 4.8rem);
   font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.045em;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
   color: #f6f8ff;
 }
 
@@ -37,41 +138,26 @@
   isolation: isolate;
   display: inline-block;
   overflow: hidden;
-  padding: 0 0.06em 0.1em;
-  perspective: 600px;
+  padding: 0.04em 0.06em 0.1em;
 }
 
+/*
+ * Each letter starts as an outline only. Its background is twice the letter's width
+ * (fill colour | transparent) and the preloader timeline slides it across, so the fill
+ * pours through the outline from left to right as the page loads.
+ */
 .pl-char {
+  --fill: #ff6a33;
+  --stroke: rgba(255, 106, 51, 0.8);
   display: inline-block;
-  background: linear-gradient(180deg, #ffffff 0%, #eef1f8 45%, #c3cadb 100%);
+  background: linear-gradient(90deg, var(--fill) 0%, var(--fill) 47%, transparent 53%, transparent 100%);
+  background-size: 220% 100%;
+  background-position: 100% 0;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-}
-
-/* First name in the brand's orange gradient */
-.pl-word-accent .pl-char {
-  background: linear-gradient(180deg, #ffb08a 0%, #ff7a45 45%, #ff5722 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-/* Marker stroke that sweeps in behind each word (scaled by the preloader timeline) */
-.pl-mark {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0.14em;
-  z-index: -1;
-  height: 0.34em;
-  border-radius: 0.08em 0.2em 0.1em 0.22em;
-  background: linear-gradient(90deg, rgba(255, 87, 34, 0.55), rgba(255, 138, 87, 0.25));
-  transform: scaleX(0) skewX(-12deg);
-  transform-origin: left center;
-}
-
-.pl-word-accent .pl-mark {
-  background: linear-gradient(90deg, rgba(74, 163, 255, 0.4), rgba(167, 139, 250, 0.22));
+  -webkit-text-stroke: clamp(0.8px, 0.12vw + 0.5px, 1.5px) var(--stroke);
+  paint-order: stroke fill;
 }
 
 .preloader-bar {
@@ -440,14 +526,32 @@
 .hero-layer-front { z-index: 3; }
 
 .hero-layer-portrait {
-  filter:
-    drop-shadow(-14px 0 38px rgba(255, 87, 34, 0.2))
-    drop-shadow(14px 0 38px rgba(74, 163, 255, 0.14));
+  clip-path: inset(-40% -40% 0 -40%);
 }
 
 .hero-portrait-wrap {
   position: absolute;
   inset: 0;
+}
+
+/* A band of light that sweeps across the figure; masked to the photo's own silhouette */
+.hero-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.5) 50%, transparent 60%);
+  background-size: 300% 100%;
+  background-position: 130% 0;
+  mix-blend-mode: soft-light;
+  -webkit-mask: url('/images/m5-hero.png') center bottom / contain no-repeat;
+          mask: url('/images/m5-hero.png') center bottom / contain no-repeat;
+  animation: hero-sheen 7s ease-in-out 4s infinite;
+  pointer-events: none;
+}
+
+@keyframes hero-sheen {
+  0%        { background-position: 130% 0; }
+  22%, 100% { background-position: -30% 0; }
 }
 
 .hero-portrait {
@@ -839,7 +943,8 @@
     display: none;
   }
 
-  .rc-face {
+  .rc-face,
+  .hero-sheen {
     animation: none;
   }
 

@@ -85,6 +85,36 @@
   50%      { opacity: 1; transform: scale(1.08); }
 }
 
+.about-spark {
+  position: absolute;
+  font-size: 1.1rem;
+  color: #ffb08a;
+  text-shadow: 0 0 14px rgba(255, 120, 60, 0.9);
+  animation: about-twinkle 3s ease-in-out infinite;
+}
+
+@keyframes about-twinkle {
+  0%, 100% { opacity: 0.25; scale: 0.7; rotate: 0deg; }
+  50%      { opacity: 1; scale: 1.2; rotate: 45deg; }
+}
+
+/* Tilts toward the cursor (see setupAboutTilt); the image inside keeps its own float */
+.about-tilt {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.about-stat {
+  transition: translate 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.about-stat:hover {
+  translate: 0 -4px;
+}
+
 .about-img {
   display: block;
   width: min(100%, 470px);
@@ -868,6 +898,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .about-glow,
+  .about-spark,
   .about-img,
   .service-cell:hover .service-icon path,
   .timeline-item.is-current .timeline-node::after {

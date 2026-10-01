@@ -1,9 +1,19 @@
 <div class="preloader" aria-hidden="true">
+  <div class="splash-aurora">
+    <span class="aurora aurora-a"></span>
+    <span class="aurora aurora-b"></span>
+    <span class="aurora aurora-c"></span>
+  </div>
+  <div class="splash-grain"></div>
+  <div class="splash-greetings">
+    @for (greeting of greetings; track greeting) {
+      <span class="splash-hello" [class.splash-hello-alt]="$odd">{{ greeting }}</span>
+    }
+  </div>
   <div class="preloader-inner">
     <div class="preloader-brand">
       @for (word of preloaderWords; track word) {
-        <span class="pl-word" [class.pl-word-accent]="$first">
-          <span class="pl-mark" aria-hidden="true"></span>
+        <span class="pl-word">
           @for (ch of word.split(''); track $index) {
             <span class="pl-char">{{ ch }}</span>
           }
@@ -16,11 +26,34 @@
 </div>
 <div class="scroll-progress"></div>
 <div class="cursor-glow"></div>
+<div class="cursor-arrow" aria-hidden="true">
+  <span class="cursor-pulse"></span>
+  <svg viewBox="0 0 32 32" width="32" height="32">
+    <defs>
+      <!-- colours flow through the gradient continuously -->
+      <linearGradient id="cursorGradient" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0">
+          <animate attributeName="stop-color" dur="4s" repeatCount="indefinite" values="#ffb86b;#ff5722;#ff4d9d;#a855f7;#4aa3ff;#ffb86b" />
+        </stop>
+        <stop offset="1">
+          <animate attributeName="stop-color" dur="4s" repeatCount="indefinite" values="#ff5722;#ff4d9d;#a855f7;#4aa3ff;#ffb86b;#ff5722" />
+        </stop>
+      </linearGradient>
+    </defs>
+    <path
+      d="M5.5 4.2c-.5-1.2.7-2.4 1.9-1.9l19.2 8.3c1.3.6 1.2 2.5-.2 2.9l-7.6 2.3a1.5 1.5 0 0 0-1 1l-2.3 7.6c-.4 1.4-2.3 1.5-2.9.2z"
+      fill="url(#cursorGradient)"
+      stroke="#fff"
+      stroke-width="1.6"
+      stroke-linejoin="round"
+    />
+  </svg>
+</div>
 <main class="portfolio-page">
-  <header class="site-nav" [class.is-scrolled]="isScrolled" [class.is-hidden]="navHidden && !menuOpen">
+  <header class="site-nav" [class.is-scrolled]="isScrolled">
     <nav class="nav-bar" aria-label="Primary">
       <a class="nav-brand" href="#home" (click)="closeMenu()">
-        <span class="brand-mark" aria-hidden="true">M</span>
+        <img class="brand-mark" src="favicon.svg" alt="" width="34" height="34" />
         <span class="brand-name">May<span>.</span></span>
       </a>
 
@@ -124,8 +157,9 @@
           <div class="hero-halo"></div>
           <div class="hero-arch"><span class="arch-grid"></span></div>
         </div>
-        <div class="hero-layer hero-layer-portrait">
+        <div class="hero-layer hero-layer-portrait" data-depth="12">
           <div class="hero-portrait-wrap">
+            <span class="hero-sheen" aria-hidden="true"></span>
             <img
               class="hero-portrait"
               src="images/m5-hero.png"
@@ -217,14 +251,19 @@
     <div class="about-grid">
       <div class="about-visual">
         <span class="about-glow" aria-hidden="true"></span>
-        <img
-          class="about-img"
-          src="images/m6.png"
-          alt="May working on a laptop, surrounded by the design tools she uses"
-          width="1087"
-          height="1446"
-          loading="lazy"
-        />
+        <span class="about-spark" style="left: 8%; top: 22%;" aria-hidden="true">✦</span>
+        <span class="about-spark" style="right: 6%; top: 12%; animation-delay: -1.2s;" aria-hidden="true">✦</span>
+        <span class="about-spark" style="right: 12%; bottom: 16%; animation-delay: -2.1s;" aria-hidden="true">✦</span>
+        <div class="about-tilt">
+          <img
+            class="about-img"
+            src="images/m6.png"
+            alt="May working on a laptop, surrounded by the design tools she uses"
+            width="1087"
+            height="1446"
+            loading="lazy"
+          />
+        </div>
       </div>
 
       <div class="about-body">

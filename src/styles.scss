@@ -16,3 +16,9 @@ body {
 body {
   overflow-x: clip;
 }
+
+/* Set by setupCustomCursor() once the animated arrow has taken over (real mouse only) */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}

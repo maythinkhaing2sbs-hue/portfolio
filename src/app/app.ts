@@ -53,7 +53,6 @@ export class App implements AfterViewInit, OnDestroy {
   private sectionObserver?: IntersectionObserver;
 
   isScrolled = false;
-  navHidden = false;
   menuOpen = false;
   emailCopied = false;
   activeSection = 'home';
@@ -61,6 +60,7 @@ export class App implements AfterViewInit, OnDestroy {
   activeProjectIndex = 0;
 
   readonly preloaderWords = ['May', 'Thin', 'Khaing'];
+  readonly greetings = ['Hello!', 'Welcome'];
 
   /** "UI/UX Designer" split into letters; `i` is the running index used to stagger effects. */
   readonly roleWords = (() => {
@@ -349,10 +349,12 @@ export class App implements AfterViewInit, OnDestroy {
     this.setupScrollProgress();
     this.setupMagneticButtons();
     this.setupCursorGlow();
+    this.setupCustomCursor();
     this.setupStickyNav();
     this.setupActiveSectionTracking();
     this.setupHeroMouseParallax();
     this.setupServiceSpotlight();
+    this.setupAboutTilt();
     this.setupTimelineProgress();
     this.setupProjectLinkAnimation();
 
@@ -451,14 +453,20 @@ export class App implements AfterViewInit, OnDestroy {
         stagger: 0.035,
         clearProps: 'transform'
       }, 0.3)
-      .from(q('.hero-halo'), { scale: 0.3, duration: 1.8 }, 0.2)
-      .from(q('.hero-arch'), { yPercent: 35, autoAlpha: 0, duration: 1.6 }, 0.25)
+      .from(q('.hero-arch'), { yPercent: 60, autoAlpha: 0, duration: 2, ease: 'expo.out' }, 0.55)
+      .from(q('.hero-halo'), { scale: 0.3, autoAlpha: 0, duration: 2.2 }, 0.7)
       .fromTo(
-        q('.hero-portrait'),
-        { y: 160, scale: 0.9, autoAlpha: 0, filter: 'blur(16px)' },
-        { y: 0, scale: 1, autoAlpha: 1, filter: 'blur(0px)', duration: 1.7, clearProps: 'filter,transform' },
-        0.4
+        q('.hero-portrait, .hero-sheen'),
+        { yPercent: 105, scale: 1.12, transformOrigin: '50% 100%' },
+        { yPercent: 0, scale: 1, duration: 2.4, ease: 'expo.out' },
+        0.75
       )
+      .add(() => {
+        // idle: a slow breathing float once the entrance has settled
+        this.gsapContext?.add(() => {
+          gsap.to(q('.hero-portrait, .hero-sheen'), { y: -10, scale: 1.012, duration: 3.2, ease: 'sine.inOut', repeat: -1, yoyo: true });
+        });
+      }, 3.2)
       .fromTo(
         q('.highlight-mark'),
         { clipPath: 'inset(0% 100% 0% 0%)' },
@@ -501,30 +509,25 @@ export class App implements AfterViewInit, OnDestroy {
       const pq = gsap.utils.selector(preloader);
 
       preloaderDone = new Promise<void>((resolve) => {
-        gsap.timeline({ onComplete: resolve })
-          .from(pq('.pl-char'), {
-            yPercent: 115,
-            rotateX: -80,
-            autoAlpha: 0,
-            transformOrigin: '50% 100%',
-            duration: 0.8,
-            ease: 'expo.out',
-            stagger: 0.05
-          })
-          .to(pq('.preloader-bar span'), { scaleX: 1, duration: 2.1, ease: 'power2.inOut' }, 0.1)
-          .from(pq('.preloader-caption'), { y: 10, autoAlpha: 0, duration: 0.6, ease: 'power2.out' }, 0.9)
-          // Highlight: marker strokes sweep in word by word…
-          .to(pq('.pl-mark'), { scaleX: 1, duration: 0.6, ease: 'power3.inOut', stagger: 0.18 }, 1.1)
-          // …then a bright wave rolls across the letters
-          .to(pq('.pl-char'), {
-            keyframes: [
-              { yPercent: -14, filter: 'brightness(1.5) drop-shadow(0 0 12px rgba(255, 150, 100, 0.8))', duration: 0.18 },
-              { yPercent: 0, filter: 'brightness(1) drop-shadow(0 0 0 rgba(255, 150, 100, 0))', duration: 0.3 }
-            ],
-            ease: 'power2.out',
-            stagger: 0.04,
-            clearProps: 'filter'
-          }, 1.5);
+        const tl = gsap.timeline({ onComplete: resolve });
+
+        // 1. Greetings cross-fade, Apple "hello" style
+        tl.from(pq('.splash-aurora'), { autoAlpha: 0, scale: 1.2, duration: 1.6, ease: 'power2.out' }, 0);
+        (pq('.splash-hello') as HTMLElement[]).forEach((el, i) => {
+          const at = 0.2 + i * 0.85;
+          tl.fromTo(el,
+            { autoAlpha: 0, y: 40, scale: 0.94 },
+            { autoAlpha: 1, y: 0, scale: 1, duration: 0.9, ease: 'expo.out' }, at)
+            .to(el, { autoAlpha: 0, y: -40, scale: 1.04, duration: 0.6, ease: 'power2.inOut' }, at + 0.65);
+        });
+
+        // 2. The name: outline first, then the fill pours through in step with the loading bar
+        tl.addLabel('name', 2.05)
+          .from(pq('.pl-char'), { y: 40, autoAlpha: 0, duration: 1.1, ease: 'expo.out', stagger: 0.035 }, 'name')
+          .from(pq('.preloader-bar'), { scaleX: 0, autoAlpha: 0, duration: 0.6, ease: 'power2.out' }, 'name+=0.2')
+          .from(pq('.preloader-caption'), { y: 10, autoAlpha: 0, duration: 0.6, ease: 'power2.out' }, 'name+=0.3')
+          .to(pq('.preloader-bar span'), { scaleX: 1, duration: 1.5, ease: 'none' }, 'name+=0.45')
+          .to(pq('.pl-char'), { backgroundPosition: '0% 0', duration: 0.3, ease: 'none', stagger: 0.1 }, 'name+=0.45');
       });
     }
 
@@ -535,11 +538,18 @@ export class App implements AfterViewInit, OnDestroy {
           return;
         }
 
+        // 3. Hand over to the home page. Kept deliberately light — only opacity and small
+        //    transforms, one thing at a time — so it stays smooth on slower machines: the camera
+        //    flies through the name, the splash dissolves, and only then does the hero start building.
         const pq = gsap.utils.selector(preloader);
         gsap.timeline({ onComplete: () => { preloader.style.display = 'none'; } })
-          .to(pq('.preloader-inner'), { yPercent: -40, autoAlpha: 0, duration: 0.7, ease: 'power3.in' })
-          .to(preloader, { clipPath: 'inset(0% 0% 100% 0%)', duration: 1.1, ease: 'expo.inOut' }, 0.25)
-          .call(() => { heroTl.play(); }, [], 0.8);
+          .to(pq('.preloader-bar, .preloader-caption'), { autoAlpha: 0, duration: 0.4, ease: 'power2.out' }, 0)
+          // fly through the name: .preloader-brand has will-change: transform, so the browser scales
+          // its cached layer on the GPU instead of re-drawing the outlined text every frame
+          .to(pq('.preloader-brand'), { scale: 10, duration: 1.25, ease: 'power3.in', force3D: true }, 0.1)
+          .to(pq('.preloader-brand'), { autoAlpha: 0, duration: 0.45, ease: 'power1.in' }, 0.9)
+          .to(preloader, { autoAlpha: 0, duration: 0.9, ease: 'power2.inOut' }, 0.95)
+          .call(() => { heroTl.play(); }, [], 1.3);
       });
     });
   }
@@ -655,15 +665,12 @@ export class App implements AfterViewInit, OnDestroy {
 
     const q = gsap.utils.selector(about);
 
-    // The image itself floats via CSS, so the entrance animates its wrapper
-    gsap.from(q('.about-visual'), {
-      y: 70,
-      scale: 0.9,
-      autoAlpha: 0,
-      duration: 1.5,
-      ease: 'expo.out',
-      scrollTrigger: { trigger: about, start: 'top 75%', once: true }
-    });
+    // The image floats via CSS and tilts via .about-tilt, so the entrance animates other layers
+    gsap.timeline({ scrollTrigger: { trigger: about, start: 'top 72%', once: true }, defaults: { ease: 'expo.out' } })
+      .from(q('.about-glow'), { scale: 0.2, autoAlpha: 0, duration: 1.8 })
+      .from(q('.about-visual'), { y: 90, autoAlpha: 0, duration: 1.6 }, 0.1)
+      .from(q('.about-tilt'), { scale: 0.7, rotate: -8, duration: 1.8, ease: 'elastic.out(1, 0.75)' }, 0.2)
+      .from(q('.about-spark'), { scale: 0, duration: 0.8, ease: 'back.out(3)', stagger: 0.15 }, 0.9);
 
     // Statement lights up word by word as it scrolls through the viewport
     const statement = q('.about-statement')[0] as HTMLElement | undefined;
@@ -695,13 +702,37 @@ export class App implements AfterViewInit, OnDestroy {
       }, 0.15 + i * 0.1);
     });
 
-    gsap.from(q('.about-meta-item'), {
-      y: 40,
-      autoAlpha: 0,
-      duration: 1,
-      ease: 'expo.out',
-      stagger: 0.1,
-      scrollTrigger: { trigger: q('.about-meta')[0], start: 'top 88%', once: true }
+    gsap.timeline({ scrollTrigger: { trigger: q('.about-meta')[0], start: 'top 88%', once: true } })
+      .from(q('.about-meta-item'), { y: 40, autoAlpha: 0, duration: 1, ease: 'expo.out', stagger: 0.1 })
+      .from(q('.meta-icon'), { scale: 0, rotate: -60, duration: 0.9, ease: 'back.out(2.5)', stagger: 0.1 }, 0.15)
+      .from(q('.meta-underline'), { scaleX: 0, transformOrigin: 'left center', duration: 0.8, ease: 'expo.out', stagger: 0.1 }, 0.4);
+  }
+
+  /** The About illustration leans toward the cursor in 3D. */
+  private setupAboutTilt(): void {
+    const visual = this.host.nativeElement.querySelector('.about-visual') as HTMLElement | null;
+    const tilt = visual?.querySelector('.about-tilt') as HTMLElement | null;
+    if (!visual || !tilt || window.matchMedia('(hover: none)').matches || this.prefersReducedMotion()) return;
+
+    gsap.set(tilt, { transformPerspective: 900 });
+    const rotateX = gsap.quickTo(tilt, 'rotationX', { duration: 0.9, ease: 'power3.out' });
+    const rotateY = gsap.quickTo(tilt, 'rotationY', { duration: 0.9, ease: 'power3.out' });
+
+    const onMove = (e: MouseEvent) => {
+      const rect = visual.getBoundingClientRect();
+      rotateY(((e.clientX - rect.left) / rect.width - 0.5) * 16);
+      rotateX(-((e.clientY - rect.top) / rect.height - 0.5) * 12);
+    };
+    const onLeave = () => {
+      rotateX(0);
+      rotateY(0);
+    };
+
+    visual.addEventListener('mousemove', onMove);
+    visual.addEventListener('mouseleave', onLeave);
+    this.hoverCleanupFns.push(() => {
+      visual.removeEventListener('mousemove', onMove);
+      visual.removeEventListener('mouseleave', onLeave);
     });
   }
 
@@ -1168,6 +1199,47 @@ export class App implements AfterViewInit, OnDestroy {
     });
   }
 
+  private setupCustomCursor(): void {
+    const arrow = document.querySelector('.cursor-arrow') as HTMLElement | null;
+    if (!arrow || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    const root = document.documentElement;
+    const interactive = 'a, button, [role="tab"], label, input, textarea';
+
+    const onMove = (e: MouseEvent) => {
+      // written directly, with no tween, so the arrow never lags behind the real pointer
+      arrow.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+      if (!arrow.classList.contains('is-visible')) {
+        // hide the native cursor only once ours is actually on screen
+        arrow.classList.add('is-visible');
+        root.classList.add('has-custom-cursor');
+      }
+    };
+    const onOver = (e: MouseEvent) => {
+      arrow.classList.toggle('is-hover', !!(e.target as Element | null)?.closest?.(interactive));
+    };
+    const onDown = () => arrow.classList.add('is-down');
+    const onUp = () => arrow.classList.remove('is-down');
+    const onLeave = () => arrow.classList.remove('is-visible');
+
+    this.ngZone.runOutsideAngular(() => {
+      document.addEventListener('mousemove', onMove, { passive: true });
+      document.addEventListener('mouseover', onOver, { passive: true });
+      document.addEventListener('mousedown', onDown);
+      document.addEventListener('mouseup', onUp);
+      root.addEventListener('mouseleave', onLeave);
+    });
+
+    this.hoverCleanupFns.push(() => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseover', onOver);
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('mouseup', onUp);
+      root.removeEventListener('mouseleave', onLeave);
+      root.classList.remove('has-custom-cursor');
+    });
+  }
+
   private setupCursorGlow(): void {
     const glow = document.querySelector('.cursor-glow') as HTMLElement | null;
     if (!glow || window.matchMedia('(hover: none)').matches) return;
@@ -1187,19 +1259,10 @@ export class App implements AfterViewInit, OnDestroy {
 
   private setupStickyNav(): void {
     this.ngZone.runOutsideAngular(() => {
-      let lastY = window.scrollY;
       this.navScrollListener = () => {
-        const y = window.scrollY;
-        const scrolled = y > 80;
-        const hidden = y > 480 && y > lastY;
-        if (Math.abs(y - lastY) < 6 && scrolled === this.isScrolled) return;
-        lastY = y;
-
-        if (scrolled !== this.isScrolled || hidden !== this.navHidden) {
-          this.ngZone.run(() => {
-            this.isScrolled = scrolled;
-            this.navHidden = hidden;
-          });
+        const scrolled = window.scrollY > 80;
+        if (scrolled !== this.isScrolled) {
+          this.ngZone.run(() => { this.isScrolled = scrolled; });
         }
       };
       window.addEventListener('scroll', this.navScrollListener, { passive: true });
