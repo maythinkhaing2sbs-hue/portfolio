@@ -62,10 +62,17 @@ export class App implements AfterViewInit, OnDestroy {
   readonly preloaderWords = ['May', 'Thin', 'Khaing'];
   readonly greetings = ['Hello!', 'Welcome'];
 
-  /** "UI/UX Designer" split into letters; `i` is the running index used to stagger effects. */
+  /**
+   * "UI/UX Designer" split into letters; `i` is the running index used to stagger effects.
+   * Each letter leans a few degrees (`r`) and sits a hair up or down (`y`, em) — playful, but
+   * kept small and on one baseline so the words still read at a glance.
+   */
   readonly roleWords = (() => {
+    const tilt = [-5, 4, 3, -4, 5, -5, 3, -4, 4, -3, 5, -4, 4];
     let i = 0;
-    return ['UI/UX', 'Designer'].map((word) => word.split('').map((ch) => ({ ch, i: i++ })));
+    return ['UI/UX', 'Designer'].map((word) =>
+      word.split('').map((ch) => ({ ch, r: tilt[i], y: i % 2 ? 0.025 : -0.025, i: i++ }))
+    );
   })();
 
   private readonly yangonFormat = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Yangon', hour: '2-digit', minute: '2-digit' });
@@ -354,6 +361,7 @@ export class App implements AfterViewInit, OnDestroy {
     this.setupActiveSectionTracking();
     this.setupHeroMouseParallax();
     this.setupServiceSpotlight();
+    this.setupProofCard();
     this.setupAboutTilt();
     this.setupTimelineProgress();
     this.setupProjectLinkAnimation();
@@ -453,6 +461,21 @@ export class App implements AfterViewInit, OnDestroy {
         stagger: 0.035,
         clearProps: 'transform'
       }, 0.3)
+      .add(() => {
+        // idle: once the letters have landed, a slow, shallow wave rolls through them one by one —
+        // small enough that the word stays easy to read.
+        // Uses `transform`, so it never fights the hover lift on `translate`.
+        this.gsapContext?.add(() => {
+          gsap.to(q('.rc'), {
+            yPercent: -4,
+            duration: 2,
+            ease: 'sine.inOut',
+            repeat: -1,
+            yoyo: true,
+            stagger: 0.14
+          });
+        });
+      }, 2.3)
       .from(q('.hero-arch'), { yPercent: 60, autoAlpha: 0, duration: 2, ease: 'expo.out' }, 0.55)
       .from(q('.hero-halo'), { scale: 0.3, autoAlpha: 0, duration: 2.2 }, 0.7)
       .fromTo(
@@ -475,6 +498,9 @@ export class App implements AfterViewInit, OnDestroy {
       )
       .from(q('.highlight-spark'), { autoAlpha: 0, duration: 0.5, ease: 'power2.out' }, 1.75)
       .from(root.querySelector('.site-nav'), { y: -30, autoAlpha: 0, duration: 1.1 }, 0.5)
+      // the proof card's glass shell fades in together with its content, so it is never seen empty.
+      // Opacity only: the card's `transform` belongs to the CSS cursor tilt (see hero.scss).
+      .from(q('.hero-proof'), { autoAlpha: 0, duration: 0.9, ease: 'power2.out' }, 1.05)
       .from(q('.hero-intro > *, .hero-proof > *'), { y: 30, autoAlpha: 0, duration: 1, stagger: 0.08 }, 1.05);
 
 
@@ -784,6 +810,33 @@ export class App implements AfterViewInit, OnDestroy {
         stagger: 0.04,
         clearProps: 'strokeDashoffset'
       }, 0.4);
+  }
+
+  /** The hero proof card leans toward the cursor in 3D and carries a spotlight under it (see hero.scss). */
+  private setupProofCard(): void {
+    const card = this.host.nativeElement.querySelector('.hero-proof') as HTMLElement | null;
+    if (!card || window.matchMedia('(hover: none)').matches || this.prefersReducedMotion()) return;
+
+    const onMove = (e: MouseEvent) => {
+      const rect = card.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width;
+      const py = (e.clientY - rect.top) / rect.height;
+      card.style.setProperty('--mx', `${px * 100}%`);
+      card.style.setProperty('--my', `${py * 100}%`);
+      card.style.setProperty('--ry', `${(px - 0.5) * 14}deg`);
+      card.style.setProperty('--rx', `${-(py - 0.5) * 12}deg`);
+    };
+    const onLeave = () => {
+      card.style.setProperty('--rx', '0deg');
+      card.style.setProperty('--ry', '0deg');
+    };
+
+    card.addEventListener('mousemove', onMove);
+    card.addEventListener('mouseleave', onLeave);
+    this.hoverCleanupFns.push(() => {
+      card.removeEventListener('mousemove', onMove);
+      card.removeEventListener('mouseleave', onLeave);
+    });
   }
 
   /** Soft light that follows the cursor inside each service cell. */

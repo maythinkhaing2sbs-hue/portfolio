@@ -1332,8 +1332,8 @@ p {
   top: 0;
   left: 0;
   z-index: 10001;
-  /* the arrow's tip sits at (5, 3) inside its 32px box */
-  margin: -3px 0 0 -5px;
+  /* the arrow's tip sits at (14, 13) inside its 48px box */
+  margin: -13px 0 0 -14px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.25s ease;
@@ -1348,7 +1348,7 @@ p {
   display: block;
   overflow: visible;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px rgba(255, 87, 34, 0.55));
-  transform-origin: 5px 3px;
+  transform-origin: 14px 13px;
   transition: scale 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), rotate 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   animation: cursor-glow-shift 4s linear infinite;
 }
@@ -1359,35 +1359,39 @@ p {
   70%      { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px rgba(124, 140, 255, 0.6)); }
 }
 
-/* A ring that ripples out from the tip while over something clickable */
-.cursor-pulse {
-  position: absolute;
-  top: 3px;
-  left: 5px;
-  width: 34px;
-  height: 34px;
-  margin: -17px 0 0 -17px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 138, 87, 0.9);
-  opacity: 0;
+.cursor-depth {
+  filter: brightness(0.5) saturate(1.2);
+}
+
+/* The click rays grow out of the tip; they pulse while over something clickable */
+.cursor-rays {
+  transform-box: view-box;
+  transform-origin: 14px 13px;
+  transition: scale 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease;
 }
 
 .cursor-arrow.is-hover svg {
-  scale: 1.3;
+  scale: 1.2;
   rotate: -8deg;
 }
 
-.cursor-arrow.is-hover .cursor-pulse {
-  animation: cursor-pulse 1.1s ease-out infinite;
+.cursor-arrow.is-hover .cursor-rays {
+  animation: cursor-rays 1.1s ease-in-out infinite;
 }
 
 .cursor-arrow.is-down svg {
-  scale: 0.85;
+  scale: 0.88;
 }
 
-@keyframes cursor-pulse {
-  from { opacity: 0.9; scale: 0.3; }
-  to   { opacity: 0; scale: 1.5; }
+.cursor-arrow.is-down .cursor-rays {
+  animation: none;
+  scale: 1.35;
+  opacity: 0.6;
+}
+
+@keyframes cursor-rays {
+  0%, 100% { scale: 0.75; opacity: 0.55; }
+  50%      { scale: 1.2; opacity: 1; }
 }
 
 @media (hover: none), (pointer: coarse) {

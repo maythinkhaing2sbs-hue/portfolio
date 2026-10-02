@@ -27,11 +27,10 @@
 <div class="scroll-progress"></div>
 <div class="cursor-glow"></div>
 <div class="cursor-arrow" aria-hidden="true">
-  <span class="cursor-pulse"></span>
-  <svg viewBox="0 0 32 32" width="32" height="32">
+  <svg viewBox="0 0 48 48" width="48" height="48">
     <defs>
-      <!-- colours flow through the gradient continuously -->
-      <linearGradient id="cursorGradient" x1="0" y1="0" x2="1" y2="1">
+      <!-- colours flow through the gradient continuously (userSpaceOnUse so the straight rays can use it too) -->
+      <linearGradient id="cursorGradient" gradientUnits="userSpaceOnUse" x1="4" y1="4" x2="40" y2="40">
         <stop offset="0">
           <animate attributeName="stop-color" dur="4s" repeatCount="indefinite" values="#ffb86b;#ff5722;#ff4d9d;#a855f7;#4aa3ff;#ffb86b" />
         </stop>
@@ -39,14 +38,33 @@
           <animate attributeName="stop-color" dur="4s" repeatCount="indefinite" values="#ff5722;#ff4d9d;#a855f7;#4aa3ff;#ffb86b;#ff5722" />
         </stop>
       </linearGradient>
+      <!-- glossy light falling from the top-left, laid over the arrow's face -->
+      <linearGradient id="cursorGloss" gradientUnits="userSpaceOnUse" x1="14" y1="13" x2="34" y2="36">
+        <stop offset="0" stop-color="#fff" stop-opacity="0.75" />
+        <stop offset="0.45" stop-color="#fff" stop-opacity="0.12" />
+        <stop offset="1" stop-color="#000" stop-opacity="0.18" />
+      </linearGradient>
+      <path id="cursorShape" d="M14 13 36.5 21.8 31.95 26.2 38.15 32.7 33.55 37.1 27.35 30.6 22.8 35Z" stroke-width="2.6" stroke-linejoin="round" />
     </defs>
-    <path
-      d="M5.5 4.2c-.5-1.2.7-2.4 1.9-1.9l19.2 8.3c1.3.6 1.2 2.5-.2 2.9l-7.6 2.3a1.5 1.5 0 0 0-1 1l-2.3 7.6c-.4 1.4-2.3 1.5-2.9.2z"
-      fill="url(#cursorGradient)"
-      stroke="#fff"
-      stroke-width="1.6"
-      stroke-linejoin="round"
-    />
+
+    <!-- click rays bursting from the tip -->
+    <g class="cursor-rays" fill="none" stroke="url(#cursorGradient)" stroke-width="2.4" stroke-linecap="round">
+      <path d="M8 13H3.5" />
+      <path d="M9.76 8.76 6.58 5.58" />
+      <path d="M14 7V2.5" />
+      <path d="M18.24 8.76 21.42 5.58" />
+      <path d="M9.76 17.24 6.58 20.42" />
+    </g>
+
+    <!-- extruded side: darkened copies stepped down-right give the arrow its thickness -->
+    <g class="cursor-depth" fill="url(#cursorGradient)" stroke="url(#cursorGradient)">
+      <use href="#cursorShape" x="2.4" y="3" />
+      <use href="#cursorShape" x="1.8" y="2.25" />
+      <use href="#cursorShape" x="1.2" y="1.5" />
+      <use href="#cursorShape" x="0.6" y="0.75" />
+    </g>
+    <use href="#cursorShape" fill="url(#cursorGradient)" stroke="url(#cursorGradient)" />
+    <use href="#cursorShape" fill="url(#cursorGloss)" stroke="url(#cursorGloss)" />
   </svg>
 </div>
 <main class="portfolio-page">
@@ -139,7 +157,7 @@
             @for (word of roleWords; track $index; let last = $last) {
               <span class="role-word">
                 @for (c of word; track c.i) {
-                  <span class="rc" [attr.data-c]="c.ch" [style.--i]="c.i"><span class="rc-face">{{ c.ch }}</span></span>
+                  <span class="rc" [attr.data-c]="c.ch" [style.--i]="c.i" [style.--r]="c.r + 'deg'" [style.--y]="c.y + 'em'"><span class="rc-face">{{ c.ch }}</span></span>
                 }
               </span>
               @if (!last) {
@@ -199,7 +217,11 @@
           </div>
           <div class="proof-label">
             <strong><span class="hero-count" data-count="40">40</span><span class="proof-plus">+</span></strong>
-            <span class="proof-stars" aria-label="Rated 5 out of 5">★★★★★</span>
+            <span class="proof-stars" role="img" aria-label="Rated 5 out of 5">
+              @for (s of [0, 1, 2, 3, 4]; track s) {
+                <span class="proof-star" [style.--s]="s" aria-hidden="true">★</span>
+              }
+            </span>
           </div>
         </div>
         <p class="proof-caption">Happy clients across web &amp; mobile</p>
@@ -208,7 +230,7 @@
             <span class="proof-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" />
-                <path d="M12 7.5V12l3 2" />
+                <path class="proof-clock-hands" d="M12 7.5V12l3 2" />
               </svg>
             </span>
             <strong><span class="hero-count" data-count="2">2</span><span class="proof-plus">+</span></strong>
@@ -216,7 +238,7 @@
           </div>
           <div class="proof-stat">
             <span class="proof-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="proof-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 3l9 5-9 5-9-5 9-5z" />
                 <path d="M3 12.5l9 5 9-5" />
                 <path d="M3 17l9 5 9-5" />

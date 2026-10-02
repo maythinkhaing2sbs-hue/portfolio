@@ -124,11 +124,11 @@
   justify-content: center;
   gap: 0 0.28em;
   padding: 0 1rem;
-  font-family: 'Unbounded Variable', 'Bricolage Grotesque Variable', 'Inter Variable', sans-serif;
-  font-size: clamp(1.7rem, 6.2vw, 4.8rem);
+  font-family: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Inter Variable', sans-serif;
+  font-size: clamp(2.4rem, 8vw, 6rem);
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
+  line-height: 1;
+  letter-spacing: -0.045em;
   color: #f6f8ff;
 }
 
@@ -435,6 +435,9 @@
 .line-role {
   padding-bottom: 0.3em;
   margin-bottom: -0.3em;
+  /* headroom so the leaning letters' corners aren't cut by the mask */
+  padding-top: 0.08em;
+  margin-top: -0.08em;
 }
 
 .hero-role {
@@ -450,8 +453,13 @@
   position: relative;
   display: inline-block;
   isolation: isolate;
-  /* hover uses the `translate` property so it never fights GSAP's `transform` */
-  transition: translate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /*
+   * Each letter leans slightly (--r / --y, set per letter in the template). The lean and the
+   * hover use the individual `rotate` / `translate` properties so they never fight GSAP's `transform`.
+   */
+  rotate: var(--r, 0deg);
+  translate: 0 var(--y, 0em);
+  transition: translate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), rotate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .rc::before {
@@ -487,8 +495,10 @@
   7%            { filter: brightness(1.35) drop-shadow(0 0 14px rgba(255, 160, 120, 0.45)); }
 }
 
+/* hovered letter straightens up and lifts */
 .rc:hover {
-  translate: 0 -0.08em;
+  rotate: 0deg;
+  translate: 0 calc(var(--y, 0em) - 0.08em);
 }
 
 /*
@@ -729,7 +739,23 @@
   backdrop-filter: blur(10px);
 }
 
+/*
+ * Proof card — a glass card that feels alive: it floats, leans toward the cursor in 3D
+ * (--rx / --ry / --mx / --my are written by setupProofCard()), a beam of light keeps
+ * travelling round its border, and a sheen sweeps across it every few seconds.
+ */
+@property --proof-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
 .hero-proof {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 0%;
+  position: relative;
   width: 290px;
   padding: 1rem 1.1rem 1.1rem;
   border-radius: 22px;
@@ -737,6 +763,68 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px) saturate(150%);
   box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: perspective(800px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.5s ease;
+  animation: proof-float 6s ease-in-out infinite;
+}
+
+.hero-proof:hover {
+  box-shadow:
+    0 34px 60px -22px rgba(0, 0, 0, 0.7),
+    0 0 50px -12px rgba(255, 87, 34, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+@keyframes proof-float {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -7px; }
+}
+
+/* A beam of the brand gradient circling the border */
+.hero-proof::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--proof-angle),
+    transparent 0deg,
+    transparent 200deg,
+    #4aa3ff 250deg,
+    #a855f7 290deg,
+    #ff5722 330deg,
+    #ffb86b 352deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: proof-border 5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes proof-border {
+  to { --proof-angle: 360deg; }
+}
+
+/* Cursor spotlight + a sheen that sweeps across the glass */
+.hero-proof::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(180px circle at var(--mx) var(--my), rgba(255, 138, 87, 0.2), transparent 70%),
+    linear-gradient(110deg, transparent 42%, rgba(255, 255, 255, 0.14) 50%, transparent 58%) 130% 0 / 300% 100% no-repeat;
+  animation: proof-sheen 6s ease-in-out 3.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes proof-sheen {
+  0%        { background-position: 0 0, 130% 0; }
+  30%, 100% { background-position: 0 0, -30% 0; }
 }
 
 .proof-clients {
@@ -770,6 +858,20 @@
   margin-left: -6px;
 }
 
+/* Avatars hop one after another */
+.avatar-stack > * {
+  animation: proof-avatar-hop 4s ease-in-out infinite;
+}
+
+.avatar-stack > :nth-child(2) { animation-delay: 0.18s; }
+.avatar-stack > :nth-child(3) { animation-delay: 0.36s; }
+.avatar-stack > :nth-child(4) { animation-delay: 0.54s; }
+
+@keyframes proof-avatar-hop {
+  0%, 22%, 100% { translate: 0 0; }
+  11%           { translate: 0 -5px; }
+}
+
 .avatar-more {
   display: grid;
   place-items: center;
@@ -798,8 +900,15 @@
 }
 
 .proof-plus {
+  display: inline-block;
   margin-left: 0.04em;
   color: var(--accent);
+  animation: proof-plus-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes proof-plus-pulse {
+  0%, 100% { scale: 1; text-shadow: none; }
+  50%      { scale: 1.18; text-shadow: 0 0 12px rgba(255, 87, 34, 0.8); }
 }
 
 .proof-stars {
@@ -808,6 +917,18 @@
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   color: #ffb547;
+}
+
+/* Stars light up one after another */
+.proof-star {
+  display: inline-block;
+  animation: proof-star-twinkle 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--s) * 0.16s);
+}
+
+@keyframes proof-star-twinkle {
+  0%, 30%, 100% { scale: 1; rotate: 0deg; filter: none; }
+  15%           { scale: 1.45; rotate: 18deg; filter: drop-shadow(0 0 6px rgba(255, 181, 71, 0.95)); }
 }
 
 .proof-caption {
@@ -836,6 +957,19 @@
   padding: 0.6rem;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  transition:
+    translate 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+.proof-stat:hover {
+  translate: 0 -4px;
+  background: rgba(255, 87, 34, 0.09);
+  border-color: rgba(255, 138, 87, 0.35);
+  box-shadow: 0 14px 26px -14px rgba(255, 87, 34, 0.6);
 }
 
 .proof-icon {
@@ -847,11 +981,43 @@
   color: #ff8a57;
   border-radius: 10px;
   background: rgba(255, 87, 34, 0.12);
+  transition: scale 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), rotate 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.4s ease, color 0.4s ease;
+}
+
+.proof-stat:hover .proof-icon {
+  scale: 1.1;
+  rotate: -6deg;
+  color: #fff;
+  background: linear-gradient(135deg, #ff7b47, #ff5722);
 }
 
 .proof-icon svg {
   width: 18px;
   height: 18px;
+  overflow: visible;
+}
+
+/* The clock keeps ticking round; the layers breathe apart and back */
+.proof-clock-hands {
+  transform-origin: 12px 12px;
+  animation: proof-clock 8s linear infinite;
+}
+
+@keyframes proof-clock {
+  to { rotate: 360deg; }
+}
+
+.proof-layers path {
+  animation: proof-layers 3s ease-in-out infinite;
+}
+
+.proof-layers path:nth-child(1) { --lift: -1.6px; }
+.proof-layers path:nth-child(2) { --lift: 0px; }
+.proof-layers path:nth-child(3) { --lift: 1.6px; }
+
+@keyframes proof-layers {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 var(--lift); }
 }
 
 .proof-stat strong {
@@ -917,6 +1083,16 @@
     font-size: 0.62em;
   }
 
+  /* Smaller and airier on phones, so the leaning letters don't touch and the line fits the screen */
+  .line-role {
+    font-size: min(0.84em, 10vw);
+    letter-spacing: 0.01em;
+  }
+
+  .role-word + .role-word {
+    margin-left: 0.1em;
+  }
+
   .hero-title {
     margin-top: 1rem;
   }
@@ -944,7 +1120,15 @@
   }
 
   .rc-face,
-  .hero-sheen {
+  .hero-sheen,
+  .hero-proof,
+  .hero-proof::before,
+  .hero-proof::after,
+  .avatar-stack > *,
+  .proof-plus,
+  .proof-star,
+  .proof-clock-hands,
+  .proof-layers path {
     animation: none;
   }
 
