@@ -70,9 +70,8 @@
 <main class="portfolio-page">
   <header class="site-nav" [class.is-scrolled]="isScrolled">
     <nav class="nav-bar" aria-label="Primary">
-      <a class="nav-brand" href="#home" (click)="closeMenu()">
+      <a class="nav-brand" href="#home" aria-label="May Thin Khaing, back to top" (click)="closeMenu()">
         <img class="brand-mark" src="favicon.svg" alt="" width="34" height="34" />
-        <span class="brand-name">May<span>.</span></span>
       </a>
 
       <div class="nav-links" (mouseleave)="resetNavIndicator()">

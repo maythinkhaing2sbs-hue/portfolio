@@ -38,7 +38,6 @@
 .nav-brand {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
   margin-right: 0.2rem;
   padding-right: 0.8rem;
   color: #fff;
@@ -57,17 +56,6 @@
 
 .nav-brand:hover .brand-mark {
   transform: rotate(-12deg) scale(1.06);
-}
-
-.brand-name {
-  font-family: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', 'Inter Variable', sans-serif;
-  font-size: 1.02rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.brand-name span {
-  color: var(--accent);
 }
 
 .nav-links {
